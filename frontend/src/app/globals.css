@@ -10,6 +10,16 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-primary: #3b82f6;
+  --color-surface: #1e1e2e;
+  --chart-originating: #22c55e;
+  --chart-non-originating: #ef4444;
+  --chart-neutral: #6b7280;
+  --chart-savings: #3b82f6;
+  --chart-current: #f59e0b;
 }
 
 @media (prefers-color-scheme: dark) {

@@ -8,16 +8,16 @@ const geistSans = Geist({
 });
 
 export const metadata = {
-  title: "ExportMinMaxer",
-  description: "Find export requirements and permits for any product",
+  title: "TariffIQ",
+  description: "AI-powered HTS classification, USMCA origin, and tariff engineering for Canadian exporters",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${geistSans.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)] font-sans">
         <Navbar />
-        {children}
+        <main className="flex-1">{children}</main>
       </body>
     </html>
   );

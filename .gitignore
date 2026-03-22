@@ -136,6 +136,12 @@ dmypy.json
 **/*.csv
 **/*.xlsx
 
+# Obsidian internal config (keep .md notes, ignore app state)
+notes/.obsidian/workspace
+notes/.obsidian/workspace.json
+notes/.obsidian/cache
+notes/.obsidian/plugins/*/data.json
+
 # Custom Files
 **/tmp/*
 **/output/*

@@ -1,72 +1,54 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { PageTransition } from "@/components/PageTransition";
+import { SavingsHero } from "@/components/savings/SavingsHero";
+import { SavingsTable } from "@/components/savings/SavingsTable";
+import { ShippingRoutes } from "@/components/map/ShippingRoutes";
 
 export default function Home() {
-  const [query, setQuery] = useState("");
-  const router = useRouter();
-
-  function handleSearch(e) {
-    e.preventDefault();
-    if (!query.trim()) return;
-    router.push(`/search?q=${encodeURIComponent(query.trim())}`);
-  }
-
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-white dark:bg-zinc-950 px-4">
-      <div className="flex flex-col items-center w-full max-w-2xl gap-8">
-
-        <h1 className="text-5xl font-bold tracking-tight text-zinc-800 dark:text-zinc-100">
-          Export<span className="text-blue-500">Min</span><span className="text-red-500">Max</span><span className="text-yellow-400">er</span>
-        </h1>
-
-        <p className="text-zinc-500 dark:text-zinc-400 text-sm">
-          Find permits, HS codes, and requirements to export any product to the US
-        </p>
-
-        <form onSubmit={handleSearch} className="w-full">
-          <div className="flex items-center w-full border border-zinc-300 dark:border-zinc-700 rounded-full px-5 py-3 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-zinc-900 gap-3">
-            <svg
-              className="w-4 h-4 text-zinc-400 shrink-0"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
+    <PageTransition>
+      <div className="max-w-6xl mx-auto px-6 py-10 w-full space-y-12">
+        <section className="text-center space-y-4">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-zinc-800 dark:text-zinc-100">
+            Stop paying $450/hr for what takes seconds.
+          </h1>
+          <p className="text-zinc-500 dark:text-zinc-400 max-w-2xl mx-auto">
+            TariffIQ helps Canadian SMEs classify products, check USMCA origin, and explore duty savings — with
+            transparent math and export-ready documents.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3 pt-2">
+            <Link
+              href="/classify"
+              className="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-colors"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
-            </svg>
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search a product to export (e.g. softwood lumber)"
-              className="flex-1 bg-transparent outline-none text-sm text-zinc-800 dark:text-zinc-100 placeholder-zinc-400"
-              autoFocus
-            />
+              Classify my product
+            </Link>
+            <Link
+              href="/savings"
+              className="px-5 py-2.5 rounded-lg border border-zinc-300 dark:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-900 text-sm transition-colors"
+            >
+              See savings calculator
+            </Link>
           </div>
+        </section>
 
-          <div className="flex justify-center gap-3 mt-6">
-            <button
-              type="submit"
-              className="px-5 py-2 text-sm bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-md transition-colors"
-            >
-              Search
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                const examples = ["softwood lumber", "canola oil", "live cattle", "aluminum ingots"];
-                setQuery(examples[Math.floor(Math.random() * examples.length)]);
-              }}
-              className="px-5 py-2 text-sm bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-md transition-colors"
-            >
-              I&apos;m Feeling Lucky
-            </button>
-          </div>
-        </form>
+        <SavingsHero totalSaved={4800} hoursFreed={10.5} />
+
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-100">Shipping lanes & vessels</h2>
+          <p className="text-sm text-zinc-500">
+            Common Canada–US lanes (backend can add live vessels when Marine Traffic is configured).
+          </p>
+          <ShippingRoutes />
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-100">Attorney vs TariffIQ</h2>
+          <SavingsTable />
+        </section>
       </div>
-    </div>
+    </PageTransition>
   );
 }

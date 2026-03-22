@@ -2,9 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { SavingsNavBadge } from "@/components/savings/SavingsNavBadge";
 
 const links = [
   { href: "/", label: "Home" },
+  { href: "/classify", label: "Classify" },
+  { href: "/usmca", label: "USMCA" },
+  { href: "/engineer", label: "Engineer" },
+  { href: "/documents", label: "Documents" },
+  { href: "/map", label: "Map" },
+  { href: "/savings", label: "Savings" },
   { href: "/hs-codes", label: "HS Codes" },
 ];
 
@@ -13,11 +20,11 @@ export default function Navbar() {
 
   return (
     <nav className="w-full border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-6 py-3">
-      <div className="max-w-6xl mx-auto flex items-center gap-8">
+      <div className="max-w-6xl mx-auto flex flex-wrap items-center gap-4 justify-between">
         <Link href="/" className="text-lg font-bold tracking-tight text-zinc-800 dark:text-zinc-100">
-          Export<span className="text-blue-500">Min</span><span className="text-red-500">Max</span><span className="text-yellow-400">er</span>
+          Tariff<span className="text-blue-500">IQ</span>
         </Link>
-        <div className="flex items-center gap-6">
+        <div className="flex flex-wrap items-center gap-4 md:gap-6">
           {links.map(({ href, label }) => (
             <Link
               key={href}
@@ -31,6 +38,7 @@ export default function Navbar() {
               {label}
             </Link>
           ))}
+          <SavingsNavBadge />
         </div>
       </div>
     </nav>

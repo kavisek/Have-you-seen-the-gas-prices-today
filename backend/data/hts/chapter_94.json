@@ -1,0 +1,14 @@
+{
+  "HTSDataSet": [
+    {
+      "htsno": "9401.00.0000",
+      "description": "Sample goods chapter 94",
+      "general": "5%"
+    },
+    {
+      "htsno": "9403.60.8081",
+      "description": "Other wooden furniture",
+      "general": "Free"
+    }
+  ]
+}

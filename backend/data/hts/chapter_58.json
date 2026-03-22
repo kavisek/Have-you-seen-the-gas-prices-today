@@ -1,0 +1,14 @@
+{
+  "HTSDataSet": [
+    {
+      "htsno": "5801.00.0000",
+      "description": "Sample goods chapter 58",
+      "general": "5%"
+    },
+    {
+      "htsno": "5802.00.0000",
+      "description": "Other",
+      "general": "Free"
+    }
+  ]
+}
