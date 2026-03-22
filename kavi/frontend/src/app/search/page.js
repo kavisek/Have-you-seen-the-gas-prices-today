@@ -172,6 +172,7 @@ function SearchContent() {
     };
 
     ws.onmessage = (event) => {
+      if (wsRef.current !== ws) return;
       let data;
       try {
         data = JSON.parse(event.data);
@@ -200,13 +201,14 @@ function SearchContent() {
     };
 
     ws.onerror = () => {
+      if (wsRef.current !== ws) return;
       setError("WebSocket connection failed. Please try again.");
       setLoading(false);
       wsRef.current = null;
     };
 
     ws.onclose = () => {
-      wsRef.current = null;
+      if (wsRef.current === ws) wsRef.current = null;
     };
   }
 

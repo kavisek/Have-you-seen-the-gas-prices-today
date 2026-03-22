@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 
@@ -54,7 +55,7 @@ class Citation(BaseModel):
 
 class TradeAnalysis(BaseModel):
     report: str
-    citations: list[Citation]
+    citations: list[Citation] = []
 
 
 # --- Request / response models ---
@@ -92,6 +93,19 @@ def get_agent() -> Agent:
     if _agent is None:
         _agent = _make_agent()
     return _agent
+
+
+async def _run_with_keepalive(websocket: WebSocket, agent: Agent, message: str):
+    """Run the agent while sending periodic status pings to keep the WebSocket alive."""
+    task = asyncio.create_task(agent.run(f"## USER QUERY\n\n{message}"))
+    elapsed = 0
+    while True:
+        try:
+            return await asyncio.wait_for(asyncio.shield(task), timeout=20.0)
+        except asyncio.TimeoutError:
+            elapsed += 20
+            logger.info(f"Agent still processing ({elapsed}s elapsed), sending keepalive")
+            await websocket.send_text(json.dumps({"type": "status", "status": "thinking"}))
 
 
 @router.post("/chat", description="Chat with Claude Sonnet 4.5.", tags=["Claude"])
@@ -170,10 +184,13 @@ async def chat_ws(websocket: WebSocket):
                 continue
 
             try:
-                result = await agent.run(f"## USER QUERY\n\n{message}")
+                result = await _run_with_keepalive(websocket, agent, message)
                 analysis: TradeAnalysis = result.output
                 usage = result.usage()
-                logger.info(f"WebSocket response ({usage.total_tokens} tokens): {analysis.report[:80]!r}")
+                llm_calls = len([m for m in result.all_messages() if hasattr(m, "parts")])
+                if llm_calls > 1:
+                    logger.warning(f"pydantic_ai made {llm_calls} LLM calls (output validation retries) for this request")
+                logger.info(f"WebSocket response ({usage.total_tokens} tokens, {llm_calls} LLM calls): {analysis.report[:80]!r}")
                 await websocket.send_text(json.dumps({
                     "type": "result",
                     "response": analysis.report,
