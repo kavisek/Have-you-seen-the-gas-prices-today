@@ -191,12 +191,20 @@ function SearchContent() {
       }
 
       if (data.type === "result") {
-        setResponse(data.response);
-        setCitations(data.citations || []);
-        setTokenInfo({ input: data.input_tokens, output: data.output_tokens });
-        setLoading(false);
+        const apply = () => {
+          if (wsRef.current !== ws && !data.cached) return;
+          setResponse(data.response);
+          setCitations(data.citations || []);
+          setTokenInfo({ input: data.input_tokens, output: data.output_tokens });
+          setLoading(false);
+        };
         ws.close();
         wsRef.current = null;
+        if (data.cached) {
+          setTimeout(apply, 7000);
+        } else {
+          apply();
+        }
       }
     };
 
@@ -216,7 +224,11 @@ function SearchContent() {
     e.preventDefault();
     const trimmed = inputValue.trim();
     if (!trimmed) return;
-    router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+    if (trimmed === q) {
+      fetchAnswer(trimmed);
+    } else {
+      router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+    }
   }
 
   return (

@@ -180,7 +180,7 @@ async def chat_ws(websocket: WebSocket):
             cached = await cache_module.get_cached(message)
             if cached:
                 logger.info("Returning cached result via WebSocket")
-                await websocket.send_text(json.dumps({"type": "result", **cached}))
+                await websocket.send_text(json.dumps({"type": "result", "cached": True, **cached}))
                 continue
 
             try:
