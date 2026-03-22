@@ -43,8 +43,10 @@ services:
       - "4002:8080"
     volumes:
       - ./backend:/app
+      - ./data:/data
     environment:
       DATABASE_URL: postgresql://postgres:docker@db:5432/postgres
+      DATA_DIR: /data
     networks:
       - network
     depends_on:

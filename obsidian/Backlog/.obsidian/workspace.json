@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Welcome.md",
+                "file": "Ideas.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Welcome"
+              "title": "Ideas"
             }
           },
           {
@@ -35,8 +35,7 @@
               "title": "Ideas"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       },
       {
         "id": "98b2ac38c1804ebd",
@@ -214,7 +213,7 @@
       "bases:Create new base": false
     }
   },
-  "active": "8bb1574b46ca766f",
+  "active": "d167a96d088e28d5",
   "lastOpenFiles": [
     "Welcome.md",
     "Ideas.md"

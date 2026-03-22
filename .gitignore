@@ -140,6 +140,9 @@ dmypy.json
 **/tmp/*
 **/output/*
 !**/output/.gitkee
+data/*
+!data/.gitkeep
+!data/canadian_hs_tariff_2026.csv
 cloud_sql_proxy
 .vscode/
 .claude/

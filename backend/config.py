@@ -8,6 +8,8 @@ ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",
 
 MARINE_TRAFFIC_API_KEY = os.getenv("MARINE_TRAFFIC_API_KEY", "")
 
+DATA_DIR = os.getenv("DATA_DIR", "../data")
+
 
 def get_origins() -> list[str]:
     return ALLOWED_ORIGINS

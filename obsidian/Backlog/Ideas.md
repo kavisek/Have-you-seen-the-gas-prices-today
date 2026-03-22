@@ -3,7 +3,10 @@
 
 
 Good
-- HS Code
+- Harmonized Sytems COde
 - Permits
-- Enviroments Reports
+- Tarrifs
+- Enviroments Reports Requiremetns
+- Certificaitons Required 
+- Business Logic
 - ExportMinMaxer
