@@ -1,15 +1,18 @@
 import os
 
-import anthropic
+from dotenv import load_dotenv
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from pydantic_ai import Agent
+from pydantic_ai.providers.anthropic import AnthropicProvider
 
 from logger import logger
 
+load_dotenv()
+
 router = APIRouter()
 
-MODEL = "claude-sonnet-4-5"
-
+MODEL = "anthropic:claude-sonnet-4-5"
 
 TRADE_SYSTEM_PROMPT = """You are a Canadian trade compliance expert helping users export products to the United States.
 
@@ -36,57 +39,85 @@ When a user searches for a product, analyse it across all seven stages of the tr
 7. Declarations and recordkeeping
    Summarise the filing requirements: classification, valuation basis, origin declaration, control permits. List the documents to retain (commercial invoice, packing list, permits, B3/B13A as applicable) and the mandatory retention period.
 
-Always ground your response in Canadian law and CBSA guidance. Be specific — give HS codes, tariff rates, agency names, and form numbers where relevant. If information is uncertain, say so and recommend the user seek a licensed customs broker or trade lawyer."""
+Always ground your response in Canadian law and CBSA guidance. Be specific — give HS codes, tariff rates, agency names, and form numbers where relevant. If information is uncertain, say so and recommend the user seek a licensed customs broker or trade lawyer.
 
+You MUST populate the citations list with real authoritative sources you relied on (government websites, legislation, CBSA publications). Each citation must have a title, organization, and url where available."""
+
+
+# --- Pydantic output models ---
+
+class Citation(BaseModel):
+    title: str
+    organization: str
+    url: str | None = None
+
+
+class TradeAnalysis(BaseModel):
+    report: str
+    citations: list[Citation]
+
+
+# --- Request / response models ---
 
 class ChatRequest(BaseModel):
     message: str
-    system_prompt: str = TRADE_SYSTEM_PROMPT
 
 
 class ChatResponse(BaseModel):
     response: str
+    citations: list[Citation]
     model: str
     input_tokens: int
     output_tokens: int
 
 
-def get_client() -> anthropic.Anthropic:
+# --- Agent (module-level, reused across requests) ---
+
+def _make_agent() -> Agent:
     api_key = os.getenv("ANTHROPIC_API_KEY")
     if not api_key:
-        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY is not set")
-    return anthropic.Anthropic(api_key=api_key)
+        raise RuntimeError("ANTHROPIC_API_KEY is not set")
+    return Agent(
+        MODEL,
+        output_type=TradeAnalysis,
+        system_prompt=TRADE_SYSTEM_PROMPT,
+        provider=AnthropicProvider(api_key=api_key),
+    )
+
+
+_agent: Agent | None = None
+
+
+def get_agent() -> Agent:
+    global _agent
+    if _agent is None:
+        _agent = _make_agent()
+    return _agent
+
+
+def build_message(user_query: str) -> str:
+    return f"## SYSTEM PROMPT\n\n{TRADE_SYSTEM_PROMPT}\n\n## USER QUERY\n\n{user_query}"
 
 
 @router.post("/chat", description="Chat with Claude Sonnet 4.5.", tags=["Claude"])
 async def chat(request: ChatRequest) -> ChatResponse:
-    logger.info(f"Claude chat request received: {request.message[:80]!r}")
+    logger.info(f"Claude chat request: {request.message[:80]!r}")
     try:
-        client = get_client()
-        response = client.messages.create(
-            model=MODEL,
-            max_tokens=2048,
-            system=request.system_prompt,
-            messages=[{"role": "user", "content": request.message}],
-        )
-        text = next(
-            (block.text for block in response.content if block.type == "text"), ""
-        )
-        logger.info(f"Claude response: {text[:80]!r}")
+        agent = get_agent()
+        result = await agent.run(build_message(request.message))
+        analysis: TradeAnalysis = result.output
+        usage = result.usage()
+        logger.info(f"Claude response ({usage.total_tokens} tokens): {analysis.report[:80]!r}")
         return ChatResponse(
-            response=text,
+            response=analysis.report,
+            citations=analysis.citations,
             model=MODEL,
-            input_tokens=response.usage.input_tokens,
-            output_tokens=response.usage.output_tokens,
+            input_tokens=usage.request_tokens or 0,
+            output_tokens=usage.response_tokens or 0,
         )
-    except HTTPException:
-        raise
-    except anthropic.AuthenticationError:
-        logger.error("Anthropic authentication failed — check ANTHROPIC_API_KEY")
-        raise HTTPException(status_code=401, detail="Invalid Anthropic API key")
-    except anthropic.RateLimitError:
-        logger.error("Anthropic rate limit hit")
-        raise HTTPException(status_code=429, detail="Anthropic rate limit exceeded")
+    except RuntimeError as e:
+        logger.error(str(e))
+        raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:
         logger.error(f"Claude chat error: {e}")
         raise HTTPException(status_code=500, detail=str(e))

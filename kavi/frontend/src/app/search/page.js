@@ -3,19 +3,58 @@
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
+const LOADING_MESSAGES = [
+  "Talking to Mark Carney…",
+  "Consulting the lawyers…",
+  "Checking in with the accountant…",
+  "Sorry, my mom gave me a call — getting back to work…",
+  "Cross-referencing the 2026 tariff schedule…",
+  "Negotiating with the border agents…",
+  "Reading the fine print on the trade agreement…",
+  "Asking the HS code oracle…",
+  "Bribing the customs officer (legally)…",
+  "Double-checking with the WTO…",
+  "Calling Ottawa for clarification…",
+  "Reviewing the permit requirements…",
+  "Almost there, just one more form to fill out…",
+];
+
+function LoadingStatus() {
+  const [index, setIndex] = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const cycle = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setIndex((i) => (i + 1) % LOADING_MESSAGES.length);
+        setVisible(true);
+      }, 400);
+    }, 3000);
+    return () => clearInterval(cycle);
+  }, []);
+
+  return (
+    <div className="flex flex-col items-center justify-center gap-6 py-16">
+      {/* Spinner */}
+      <div className="relative w-14 h-14">
+        <div className="absolute inset-0 rounded-full border-4 border-zinc-200 dark:border-zinc-700" />
+        <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-500 animate-spin" />
+      </div>
+
+      {/* Cycling message */}
+      <p
+        className="text-sm text-zinc-500 dark:text-zinc-400 text-center max-w-xs transition-opacity duration-400"
+        style={{ opacity: visible ? 1 : 0 }}
+      >
+        {LOADING_MESSAGES[index]}
+      </p>
+    </div>
+  );
+}
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4002";
 
-const SYSTEM_PROMPT = `You are an expert trade advisor specializing in Canadian exports to the United States.
-
-When a user asks about a product, provide a comprehensive but concise overview covering:
-1. **HS Code(s)**: The relevant Harmonized System codes for this product
-2. **US Tariff Rates**: Current US import tariffs — MFN rate, any Section 301 tariffs, CUSMA/USMCA preferential rates
-3. **Permits & Licenses**: Any permits, licenses, or certifications required to export from Canada to the US
-4. **Key Regulations**: Major regulatory bodies (FDA, USDA, CBP, etc.) and compliance requirements
-5. **Required Documents**: Essential export and import documentation
-6. **Special Considerations**: Current trade disputes, quotas, countervailing duties, or notable restrictions
-
-Keep responses factual, actionable, and well-organized. Use clear section headers.`;
 
 function renderInline(text) {
   const parts = text.split(/(\*\*[^*]+\*\*)/g);
@@ -122,7 +161,6 @@ function SearchContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: `What do I need to know to export "${product}" from Canada to the United States? Cover HS codes, tariffs, permits, regulations, and required documents.`,
-          system_prompt: SYSTEM_PROMPT,
         }),
         signal: controller.signal,
       });
@@ -206,39 +244,7 @@ function SearchContent() {
           </h1>
         )}
 
-        {loading && (
-          <div className="flex flex-col gap-6">
-            <div className="flex items-center gap-3 text-sm text-zinc-500">
-              <div className="flex gap-1">
-                <span
-                  className="w-2 h-2 rounded-full bg-zinc-400 animate-bounce"
-                  style={{ animationDelay: "0ms" }}
-                />
-                <span
-                  className="w-2 h-2 rounded-full bg-zinc-400 animate-bounce"
-                  style={{ animationDelay: "150ms" }}
-                />
-                <span
-                  className="w-2 h-2 rounded-full bg-zinc-400 animate-bounce"
-                  style={{ animationDelay: "300ms" }}
-                />
-              </div>
-              Researching export requirements for{" "}
-              <strong className="text-zinc-700 dark:text-zinc-300">{q}</strong>…
-            </div>
-
-            {/* Skeleton lines */}
-            <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 space-y-3 animate-pulse">
-              {[100, 80, 92, 60, 85, 70, 95, 55].map((w, i) => (
-                <div
-                  key={i}
-                  className="h-3 bg-zinc-200 dark:bg-zinc-700 rounded"
-                  style={{ width: `${w}%` }}
-                />
-              ))}
-            </div>
-          </div>
-        )}
+        {loading && <LoadingStatus />}
 
         {error && (
           <div className="px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm">
