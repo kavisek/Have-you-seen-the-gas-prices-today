@@ -3,6 +3,23 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+const PRODUCTS = [
+  "softwood lumber", "canola oil", "live cattle", "aluminum ingots",
+  "maple syrup", "wheat", "potash", "crude oil", "auto parts",
+  "Atlantic salmon", "blueberries", "ice wine", "cheddar cheese",
+  "steel coils", "copper wire", "soybeans", "newsprint", "wild blueberries",
+  "oat flour", "titanium sheets", "nickel ore", "natural gas", "zinc ingots",
+  "barley", "pork belly", "frozen shrimp", "lobster", "beef cuts",
+];
+
+const BUBBLES = PRODUCTS.map((name, i) => ({
+  name,
+  top: 8 + (i % 10) * 8.5,
+  duration: 18 + (i % 8) * 4,
+  delay: -(i * 2.3),
+  opacity: 0.12 + (i % 5) * 0.04,
+}));
+
 export default function Home() {
   const [query, setQuery] = useState("");
   const router = useRouter();
@@ -14,8 +31,36 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-white dark:bg-zinc-950 px-4">
-      <div className="flex flex-col items-center w-full max-w-2xl gap-8">
+    <div className="relative flex flex-col items-center justify-center min-h-screen bg-white dark:bg-zinc-950 px-4 overflow-hidden">
+
+      <style>{`
+        @keyframes floatRight {
+          from { transform: translateX(-220px); }
+          to { transform: translateX(calc(100vw + 220px)); }
+        }
+      `}</style>
+
+      {/* Floating product bubbles */}
+      <div className="absolute inset-0 pointer-events-none">
+        {BUBBLES.map((bubble, i) => (
+          <div
+            key={i}
+            className="absolute whitespace-nowrap rounded-full border border-zinc-400 dark:border-zinc-400 px-4 py-2 text-sm text-zinc-400 dark:text-zinc-300"
+            style={{
+              top: `${bubble.top}%`,
+              left: 0,
+              animation: `floatRight ${bubble.duration}s linear ${bubble.delay}s infinite`,
+              opacity: 0.45 + (i % 5) * 0.08,
+            }}
+          >
+            {bubble.name}
+          </div>
+        ))}
+      </div>
+
+      <div className="relative flex flex-col items-center w-full max-w-2xl gap-8 z-10">
+        {/* Gaussian blur backdrop */}
+        <div className="absolute inset-0 -inset-x-24 -inset-y-16 rounded-3xl backdrop-blur-md bg-zinc-950/40 -z-10" />
 
         <h1 className="text-5xl font-bold tracking-tight text-zinc-800 dark:text-zinc-100">
           Export<span className="text-blue-500">Min</span><span className="text-red-500">Max</span><span className="text-yellow-400">er</span>
@@ -70,3 +115,4 @@ export default function Home() {
     </div>
   );
 }
+

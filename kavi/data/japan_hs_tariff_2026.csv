@@ -1,0 +1,230 @@
+hs_code,description,mfn_rate,canada_preferential_rate,fta_name,uom,notes
+01,LIVE ANIMALS,,,,
+0101,Live horses,Free,Free,CPTPP,NMB,
+0102,Live bovine animals,Free,Free,CPTPP,NMB,
+0103,Live swine,Free,Free,CPTPP,NMB,
+0104,Live sheep and goats,Free,Free,CPTPP,NMB,
+0105,Live poultry,Free,Free,CPTPP,NMB,
+02,MEAT AND EDIBLE MEAT OFFAL,,,,
+0201,Beef fresh or chilled,38.5%,~20%,CPTPP,KG,CPTPP staging: 38.5%→9% over 16 years; Year 8 (2026) ~20%; TRQ 50000 MT at 9%
+0202,Beef frozen,38.5%,~20%,CPTPP,KG,Same staging as fresh beef; Canada TRQ quota
+0203,Pork fresh chilled frozen,¥482/kg or 4.3% (higher),¥195/kg or 2.2%,CPTPP,KG,Gate price system; CPTPP staged reduction
+0204,Sheep and goat meat,Free,Free,CPTPP,KG,
+0207,Poultry meat fresh frozen,8.5%,~3%,CPTPP,KG,Staging: 8.5%→0% over 11 years; Year 8 ~3%
+0210,Salted dried smoked meat,6%,Free,CPTPP,KG,Staged reduction
+03,FISH AND SEAFOOD,,,,
+0301,Live fish,Free,Free,CPTPP,NMB,
+0302,Fresh or chilled fish,3.5-10.5%,Free,CPTPP,KG,Most fish staged to 0%; major Canadian export (salmon)
+0303,Frozen fish,3.5-10.5%,Free,CPTPP,KG,Salmon 3.5% MFN → 0% CPTPP by Year 11
+0304,Fish fillets fresh chilled frozen,3.5-10.5%,Free,CPTPP,KG,
+0305,Dried salted smoked fish,3.5-9.5%,Free,CPTPP,KG,
+0306,Crustaceans lobster crab shrimp,1-10%,Free,CPTPP,KG,Snow crab and lobster: 0% or near 0%
+0307,Molluscs oysters scallops mussels,4-10%,Free,CPTPP,KG,Staged to 0%
+04,DAIRY EGGS AND HONEY,,,,
+0401,Milk and cream not concentrated,25%,Free,CPTPP,LT,TRQ: Japan CPTPP dairy TRQ growing to 20000 KL
+0402,Milk concentrated or sweetened,25%,Free,CPTPP,KG,TRQ applies
+0403,Buttermilk yogurt fermented milk,25%,Free,CPTPP,KG,TRQ
+0405,Butter and dairy spreads,¥985/kg,¥606/kg,CPTPP,KG,TRQ: 250 MT/yr at ¥606/kg growing to 500 MT
+0406,Cheese and curd,29.8%,Free,CPTPP,KG,TRQ: natural cheese quota growing
+0407,Birds eggs in shell,Free,Free,CPTPP,NMB,
+0409,Natural honey,Free,Free,CPTPP,KG,
+05,OTHER ANIMAL PRODUCTS,,,,
+0511,Other animal products NES,Free,Free,CPTPP,KG,
+06,LIVE TREES AND PLANTS,,,,
+0602,Other live plants shrubs trees,Free,Free,CPTPP,NMB,
+0603,Cut flowers and flower buds,Free-6.5%,Free,CPTPP,NMB,
+07,EDIBLE VEGETABLES,,,,
+0701,Potatoes fresh or chilled,Free,Free,CPTPP,KG,
+0702,Tomatoes fresh or chilled,6%,Free,CPTPP,KG,Staged to 0%
+0703,Onions shallots garlic leeks,8.5%,Free,CPTPP,KG,
+0704,Cabbages cauliflower brassicas,3%,Free,CPTPP,KG,
+0707,Cucumbers and gherkins,Free,Free,CPTPP,KG,
+0709,Other vegetables NES,Free-9%,Free,CPTPP,KG,Asparagus 3%
+0710,Frozen vegetables,7.3%,Free,CPTPP,KG,
+0712,Dried vegetables,Free-9%,Free,CPTPP,KG,
+08,EDIBLE FRUIT AND NUTS,,,,
+0801,Coconuts Brazil nuts cashews,Free,Free,CPTPP,KG,
+0802,Other nuts almonds walnuts,Free-3%,Free,CPTPP,KG,
+0803,Bananas and plantains,Free,Free,CPTPP,KG,
+0805,Citrus fruit oranges lemons,16%-32%,~6%,CPTPP,KG,Seasonal tariffs; staged reduction under CPTPP
+0806,Grapes fresh or dried,Free-17%,Free,CPTPP,KG,Seasonal; staged reduction
+0808,Apples pears and quinces,17%,Free,CPTPP,KG,Staged to 0% over 11 years; Year 8 ~5%
+0810,Other fresh fruit strawberries,4.5-9%,Free,CPTPP,KG,
+0811,Frozen fruit and nuts,3.6-23%,Free,CPTPP,KG,
+09,COFFEE TEA SPICES,,,,
+0901,Coffee roasted or unroasted,Free,Free,CPTPP,KG,
+0902,Tea,Free,Free,CPTPP,KG,
+0904,Pepper and chilli,Free,Free,CPTPP,KG,
+10,CEREALS,,,,
+1001,Wheat and meslin,¥55/kg (gate price),Free,CPTPP,KG,Japan state trading entity (MAFF); CPTPP: markup reduction creating quota; TRQ
+1003,Barley,¥39/kg (gate price),Free,CPTPP,KG,State trading; CPTPP markup reduction
+1004,Oats,¥39/kg,Free,CPTPP,KG,CPTPP TRQ grows over time
+1005,Maize (corn),Free,Free,CPTPP,KG,Already 0%
+1007,Grain sorghum,Free,Free,CPTPP,KG,
+1008,Buckwheat millet canary seed,Free,Free,CPTPP,KG,
+11,MILLING PRODUCTS,,,,
+1101,Wheat or meslin flour,25%,Free,CPTPP,KG,TRQ under CPTPP
+12,OIL SEEDS,,,,
+1201,Soybeans,Free,Free,CPTPP,KG,
+1205,Rapeseed/canola,Free,Free,CPTPP,KG,Major Canadian export to Japan
+1207,Other oil seeds hemp mustard,Free,Free,CPTPP,KG,
+13,LAC GUMS RESINS,,,,
+1302,Vegetable saps and extracts,Free,Free,CPTPP,KG,
+15,ANIMAL AND VEGETABLE FATS,,,,
+1514,Rapeseed/canola/mustard oil,Free-13.2%,Free,CPTPP,KG,Canada key canola supplier to Japan
+1515,Other fixed vegetable oils,Free-13.2%,Free,CPTPP,KG,
+16,MEAT AND FISH PREPARATIONS,,,,
+1601,Sausages and similar,6.4%,Free,CPTPP,KG,Staged to 0%
+1602,Other prepared or preserved meat,6.4%,Free,CPTPP,KG,
+1604,Prepared or preserved fish,3.5-9.6%,Free,CPTPP,KG,Staged to 0%
+1605,Crustaceans molluscs prepared,3.5-7.2%,Free,CPTPP,KG,
+17,SUGARS,,,,
+1701,Cane or beet sugar,¥103.1/kg (raw),¥73.3/kg,CPTPP,KG,Highly protected; TRQ under CPTPP
+1702,Other sugars and maple syrup,Free-¥103.1/kg,Free,CPTPP,KG,Maple syrup: 0%
+1704,Sugar confectionery no cocoa,25%,Free,CPTPP,KG,Staged reduction
+18,COCOA,,,,
+1801,Cocoa beans,Free,Free,CPTPP,KG,
+1806,Chocolate and cocoa preparations,10-21%,Free,CPTPP,KG,Staged reduction
+19,CEREAL PREPARATIONS,,,,
+1902,Pasta noodles,Free-30%,Free,CPTPP,KG,Staged reduction
+1905,Bread pastry cakes biscuits,Free-25.5%,Free,CPTPP,KG,Staged to 0%
+20,VEGETABLE AND FRUIT PREPARATIONS,,,,
+2002,Tomatoes prepared or preserved,9.6%,Free,CPTPP,KG,
+2007,Jams jellies marmalades,21.3%,Free,CPTPP,KG,Staged reduction
+2009,Fruit juices unfermented,Free-21.3%,Free,CPTPP,LT,
+21,MISCELLANEOUS FOOD PREPARATIONS,,,,
+2101,Extracts of coffee tea,Free-9.6%,Free,CPTPP,KG,
+2106,Food preparations NES,Free-21.3%,Free,CPTPP,KG,
+22,BEVERAGES,,,,
+2201,Waters and mineral waters,Free,Free,CPTPP,LT,
+2202,Non-alcoholic beverages,Free,Free,CPTPP,LT,
+2203,Beer made from malt,Free,Free,CPTPP,LT,Japan already 0% on beer
+2204,Wine of fresh grapes,15%,Free,CPTPP,LT,CPTPP: 15% → 0% over 7 years; effectively 0% by 2026; Canadian wine growing market
+2206,Other fermented beverages cider,Free,Free,CPTPP,LT,
+2207,Undenatured ethyl alcohol ≥80%,Free,Free,CPTPP,LT,
+2208,Spirits and liqueurs,Free,Free,CPTPP,LT,Canadian whisky 0%; Japan already 0% on spirits
+23,ANIMAL FEED RESIDUES,,,,
+2304,Soya-bean oil-cake,Free,Free,CPTPP,KG,
+2306,Oil-cake of rapeseed/canola,Free,Free,CPTPP,KG,
+2309,Preparations for animal feeding,Free,Free,CPTPP,KG,
+24,TOBACCO,,,,
+2401,Unmanufactured tobacco,Free,Free,CPTPP,KG,
+2402,Cigars cigarillos cigarettes,Free,Free,CPTPP,THD,
+25,SALT SULPHUR EARTH STONE,,,,
+2501,Salt,Free,Free,CPTPP,KG,
+2503,Sulphur,Free,Free,CPTPP,KG,
+26,ORES SLAG AND ASH,,,,
+2601,Iron ores and concentrates,Free,Free,CPTPP,KG,
+2603,Copper ores and concentrates,Free,Free,CPTPP,KG,
+2604,Nickel ores and concentrates,Free,Free,CPTPP,KG,
+2612,Uranium ores and concentrates,Free,Free,CPTPP,KG,Canada supplies uranium to Japan (nuclear)
+27,MINERAL FUELS AND OILS,,,,
+2701,Coal and solid fuel from coal,Free,Free,CPTPP,KG,Canadian coal to Japan (steelmaking and thermal)
+2703,Peat,Free,Free,CPTPP,KG,
+2709,Crude petroleum oils,Free,Free,CPTPP,BBL,
+2710,Petroleum products refined,Free,Free,CPTPP,BBL,
+2711,Natural gas LNG,Free,Free,CPTPP,GJ,Canada LNG exports to Japan (Woodfibre LNG etc)
+2713,Petroleum coke,Free,Free,CPTPP,KG,
+28,INORGANIC CHEMICALS,,,,
+2814,Ammonia anhydrous,Free,Free,CPTPP,KG,
+29,ORGANIC CHEMICALS,,,,
+2901,Acyclic hydrocarbons,Free,Free,CPTPP,KG,
+2902,Cyclic hydrocarbons,Free,Free,CPTPP,KG,
+30,PHARMACEUTICAL PRODUCTS,,,,
+3004,Medicaments in measured doses,Free,Free,CPTPP,KG,
+3005,Wadding gauze bandages,Free,Free,CPTPP,KG,
+31,FERTILIZERS,,,,
+3104,Mineral or chemical potassic fertilizers,Free,Free,CPTPP,KG,Canada world top potash producer; Japan major buyer
+3105,Mixed mineral fertilizers NES,Free,Free,CPTPP,KG,
+39,PLASTICS AND ARTICLES THEREOF,,,,
+3901,Polymers of ethylene,Free-3%,Free,CPTPP,KG,
+3902,Polymers of propylene,Free,Free,CPTPP,KG,
+3904,Polymers of vinyl chloride PVC,Free-3.9%,Free,CPTPP,KG,
+3920,Other plates and sheets of plastics,Free-6.5%,Free,CPTPP,KG,
+40,RUBBER AND ARTICLES THEREOF,,,,
+4011,New pneumatic tyres,3%,Free,CPTPP,NMB,
+43,FURSKINS AND ARTICLES,,,,
+4301,Raw furskins mink fox,Free,Free,CPTPP,KG,Canada major furskin exporter
+4302,Tanned or dressed furskins,Free,Free,CPTPP,KG,
+44,WOOD AND ARTICLES OF WOOD,,,,
+4403,Wood in the rough (logs),Free,Free,CPTPP,M3,Canadian logs and lumber to Japan
+4407,Wood sawn or chipped (lumber),4.8%,Free,CPTPP,M3,4.8% MFN; staged to 0% under CPTPP
+4410,Particle board OSB,Free,Free,CPTPP,KG,
+4411,Fibreboard MDF,Free,Free,CPTPP,KG,
+4412,Plywood veneered panels,Free-10%,Free,CPTPP,M2,Softwood plywood: 10% MFN → 0% CPTPP
+4418,Builders joinery and carpentry,Free-4.8%,Free,CPTPP,KG,
+47,PULP OF WOOD,,,,
+4701,Mechanical wood pulp,Free,Free,CPTPP,KG,
+4703,Chemical wood pulp soda sulphate,Free,Free,CPTPP,KG,
+48,PAPER AND PAPERBOARD,,,,
+4801,Newsprint in rolls or sheets,Free,Free,CPTPP,KG,
+4802,Uncoated paper for writing printing,Free,Free,CPTPP,KG,
+4804,Kraft paper uncoated,Free,Free,CPTPP,KG,
+52,COTTON,,,,
+5208,Woven fabrics of cotton,10.9%,Free,CPTPP,M2,Staged to 0%
+61,CLOTHING KNITTED OR CROCHETED,,,,
+6101,Mens overcoats knitted,10.9%,Free,CPTPP,NMB,Staged to 0%
+6109,T-shirts singlets knitted,10.9%,Free,CPTPP,NMB,
+6110,Jerseys pullovers knitted,10.9%,Free,CPTPP,NMB,
+62,CLOTHING NOT KNITTED,,,,
+6201,Mens overcoats woven,10.9%,Free,CPTPP,NMB,
+64,FOOTWEAR,,,,
+6401,Waterproof footwear rubber soles,24%,Free,CPTPP,PR,Staged to 0% over 16 years; Year 8 ~12%
+6402,Other footwear with rubber soles,24%,Free,CPTPP,PR,Staged to 0%
+6403,Footwear with leather uppers,30%,Free,CPTPP,PR,Staged to 0% over 16 years
+71,PRECIOUS METALS AND GEMS,,,,
+7106,Silver unwrought powder,Free,Free,CPTPP,KG,
+7108,Gold unwrought monetary,Free,Free,CPTPP,KG,Canada major gold producer
+7110,Platinum group metals,Free,Free,CPTPP,KG,
+7113,Jewellery articles precious metal,Free,Free,CPTPP,KG,
+72,IRON AND STEEL,,,,
+7207,Semi-finished products iron steel,Free,Free,CPTPP,KG,Japan already low/zero steel tariffs
+7208,Flat-rolled iron non-alloy hot-rolled,Free,Free,CPTPP,KG,
+7219,Flat-rolled stainless steel,Free,Free,CPTPP,KG,
+73,ARTICLES OF IRON AND STEEL,,,,
+7304,Tubes pipes and hollow profiles,Free,Free,CPTPP,KG,
+74,COPPER AND ARTICLES THEREOF,,,,
+7403,Refined copper unwrought,Free,Free,CPTPP,KG,Japan already 0%
+7408,Copper wire,Free,Free,CPTPP,KG,
+75,NICKEL AND ARTICLES THEREOF,,,,
+7502,Unwrought nickel,Free,Free,CPTPP,KG,Canada major nickel producer; Japan industrial user
+76,ALUMINIUM AND ARTICLES THEREOF,,,,
+7601,Unwrought aluminium,Free,Free,CPTPP,KG,Japan 0% on unwrought aluminium MFN
+7604,Aluminium bars rods profiles,Free-3.3%,Free,CPTPP,KG,Staged to 0%
+7606,Aluminium plates sheets strip foil,Free-3.3%,Free,CPTPP,KG,
+79,ZINC AND ARTICLES THEREOF,,,,
+7901,Unwrought zinc,Free,Free,CPTPP,KG,
+84,NUCLEAR REACTORS AND MACHINERY,,,,
+8401,Nuclear reactors fuel elements,Free,Free,CPTPP,NMB,Japan nuclear sector; Canada CANDU expertise
+8411,Turbojets turbopropellers gas turbines,Free,Free,CPTPP,NMB,
+8429,Self-propelled bulldozers scrapers,Free,Free,CPTPP,NMB,
+8471,Automatic data processing machines,Free,Free,CPTPP,NMB,
+8479,Machines and mechanical appliances NES,Free,Free,CPTPP,NMB,
+85,ELECTRICAL MACHINERY AND EQUIPMENT,,,,
+8501,Electric motors and generators,Free,Free,CPTPP,NMB,
+8504,Electrical transformers inductors,Free,Free,CPTPP,NMB,
+8507,Electric storage batteries,Free,Free,CPTPP,NMB,
+8517,Telephone sets network equipment,Free,Free,CPTPP,NMB,
+8544,Insulated wire cable optical fibre,Free,Free,CPTPP,KG,
+87,VEHICLES,,,,
+8701,Tractors,Free,Free,CPTPP,NMB,Japan already 0% on tractors
+8703,Passenger motor vehicles,Free,Free,CPTPP,NMB,Japan MFN already 0% on cars; no additional CPTPP benefit needed
+8704,Motor vehicles for goods transport,Free,Free,CPTPP,NMB,Japan 0% MFN
+8708,Parts and accessories for vehicles,Free,Free,CPTPP,KG,
+8711,Motorcycles,Free,Free,CPTPP,NMB,
+88,AIRCRAFT AND SPACECRAFT,,,,
+8802,Helicopters aeroplanes gliders,Free,Free,CPTPP,NMB,
+8803,Parts of aircraft or spacecraft,Free,Free,CPTPP,KG,
+90,OPTICAL MEASURING INSTRUMENTS,,,,
+9018,Medical surgical dental instruments,Free,Free,CPTPP,NMB,
+9022,X-ray computed tomography apparatus,Free,Free,CPTPP,NMB,
+9031,Measuring checking testing instruments,Free,Free,CPTPP,NMB,
+94,FURNITURE,,,,
+9401,Seats chairs sofas,Free,Free,CPTPP,NMB,Japan 0% or near 0% on most furniture
+9403,Other furniture wood metal plastic,Free-4.3%,Free,CPTPP,NMB,Staged to 0%
+95,TOYS GAMES SPORTS EQUIPMENT,,,,
+9503,Toys NES tricycles scooters,Free,Free,CPTPP,NMB,Japan 0% on most toys
+97,WORKS OF ART ANTIQUES,,,,
+9701,Paintings drawings pastels,Free,Free,CPTPP,NMB,
+9703,Original sculptures,Free,Free,CPTPP,NMB,
+9706,Antiques over 100 years old,Free,Free,CPTPP,NMB,
