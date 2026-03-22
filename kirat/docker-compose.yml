@@ -1,0 +1,77 @@
+services:
+  db:
+    container_name: postgres
+    build:
+      context: ./database
+      dockerfile: Dockerfile.postgres
+    command: postgres -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.track=all -c max_connections=400
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: docker
+    ports:
+      - "5432:5432"
+    networks:
+      - network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  alembic:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: "alembic upgrade head"
+    environment:
+      - POSTGRES_CONNECTION_STRING=postgresql://postgres:docker@db:5432/postgres
+    networks:
+      - network
+    depends_on:
+      db:
+        condition: service_healthy
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "4002:8080"
+    volumes:
+      - ./backend:/app
+      - ./data:/data
+    environment:
+      DATABASE_URL: postgresql://postgres:docker@db:5432/postgres
+      DATA_DIR: /data
+    networks:
+      - network
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:4002
+    networks:
+      - network
+    depends_on:
+      - backend
+
+networks:
+  network:
+
+volumes:
+  postgres_data:
