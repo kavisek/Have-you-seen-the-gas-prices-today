@@ -1,0 +1,309 @@
+"use client";
+
+import { useState, useEffect, useRef, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4002";
+
+const SYSTEM_PROMPT = `You are an expert trade advisor specializing in Canadian exports to the United States.
+
+When a user asks about a product, provide a comprehensive but concise overview covering:
+1. **HS Code(s)**: The relevant Harmonized System codes for this product
+2. **US Tariff Rates**: Current US import tariffs — MFN rate, any Section 301 tariffs, CUSMA/USMCA preferential rates
+3. **Permits & Licenses**: Any permits, licenses, or certifications required to export from Canada to the US
+4. **Key Regulations**: Major regulatory bodies (FDA, USDA, CBP, etc.) and compliance requirements
+5. **Required Documents**: Essential export and import documentation
+6. **Special Considerations**: Current trade disputes, quotas, countervailing duties, or notable restrictions
+
+Keep responses factual, actionable, and well-organized. Use clear section headers.`;
+
+function renderInline(text) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return (
+        <strong key={i} className="font-semibold text-zinc-900 dark:text-zinc-100">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+    return part;
+  });
+}
+
+function ResponseBlock({ text }) {
+  const lines = text.split("\n");
+  return (
+    <div className="space-y-3 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+      {lines.map((line, i) => {
+        if (!line.trim()) return <div key={i} className="h-1" />;
+
+        const headerMatch = line.match(/^\*\*(.+?)\*\*[:\s]*(.*)/);
+        if (headerMatch) {
+          return (
+            <div key={i}>
+              <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                {headerMatch[1]}
+              </span>
+              {headerMatch[2] && <span>: {renderInline(headerMatch[2])}</span>}
+            </div>
+          );
+        }
+
+        // Markdown headings like ## Title or # Title
+        const mdHeading = line.match(/^#{1,3}\s+(.*)/);
+        if (mdHeading) {
+          return (
+            <p key={i} className="font-semibold text-zinc-900 dark:text-zinc-100 pt-1">
+              {renderInline(mdHeading[1])}
+            </p>
+          );
+        }
+
+        if (/^\d+\.\s/.test(line)) {
+          return (
+            <div key={i} className="flex gap-2">
+              <span className="text-zinc-400 shrink-0">{line.match(/^\d+/)[0]}.</span>
+              <span>{renderInline(line.replace(/^\d+\.\s/, ""))}</span>
+            </div>
+          );
+        }
+
+        if (/^[-•*]\s/.test(line)) {
+          return (
+            <div key={i} className="flex gap-2 pl-2">
+              <span className="text-zinc-400 shrink-0 mt-0.5">•</span>
+              <span>{renderInline(line.replace(/^[-•*]\s/, ""))}</span>
+            </div>
+          );
+        }
+
+        return <p key={i}>{renderInline(line)}</p>;
+      })}
+    </div>
+  );
+}
+
+function SearchContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const q = searchParams.get("q") || "";
+
+  const [inputValue, setInputValue] = useState(q);
+  const [response, setResponse] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [tokenInfo, setTokenInfo] = useState(null);
+  const abortRef = useRef(null);
+
+  useEffect(() => {
+    if (!q.trim()) return;
+    setInputValue(q);
+    fetchAnswer(q);
+    return () => {
+      if (abortRef.current) abortRef.current.abort();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q]);
+
+  async function fetchAnswer(product) {
+    if (abortRef.current) abortRef.current.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    setLoading(true);
+    setError(null);
+    setResponse(null);
+    setTokenInfo(null);
+
+    try {
+      const res = await fetch(`${API_URL}/claude/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: `What do I need to know to export "${product}" from Canada to the United States? Cover HS codes, tariffs, permits, regulations, and required documents.`,
+          system_prompt: SYSTEM_PROMPT,
+        }),
+        signal: controller.signal,
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: res.statusText }));
+        throw new Error(err.detail || `Server error: ${res.status}`);
+      }
+
+      const data = await res.json();
+      setResponse(data.response);
+      setTokenInfo({ input: data.input_tokens, output: data.output_tokens });
+    } catch (err) {
+      if (err.name === "AbortError") return;
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleSearch(e) {
+    e.preventDefault();
+    const trimmed = inputValue.trim();
+    if (!trimmed) return;
+    router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+  }
+
+  return (
+    <div className="min-h-screen bg-white dark:bg-zinc-950">
+      {/* Sticky search header */}
+      <div className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 sticky top-0 z-10">
+        <div className="max-w-3xl mx-auto px-6 py-4">
+          <form onSubmit={handleSearch} className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => router.push("/")}
+              className="text-lg font-bold tracking-tight text-zinc-800 dark:text-zinc-100 shrink-0 hover:opacity-80 transition-opacity"
+            >
+              Export<span className="text-red-600">Min</span>
+              <span className="dark:text-white">Maxer</span>
+            </button>
+            <div className="flex items-center flex-1 border border-zinc-300 dark:border-zinc-700 rounded-full px-4 py-2 bg-white dark:bg-zinc-900 gap-2 hover:shadow-sm transition-shadow">
+              <svg
+                className="w-4 h-4 text-zinc-400 shrink-0"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
+                />
+              </svg>
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder="Search a product..."
+                className="flex-1 bg-transparent outline-none text-sm text-zinc-800 dark:text-zinc-100 placeholder-zinc-400"
+              />
+            </div>
+            <button
+              type="submit"
+              className="px-4 py-2 text-sm bg-zinc-800 hover:bg-zinc-700 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-white rounded-full transition-colors shrink-0"
+            >
+              Search
+            </button>
+          </form>
+        </div>
+      </div>
+
+      {/* Results */}
+      <div className="max-w-3xl mx-auto px-6 py-8">
+        {q && (
+          <h1 className="text-xl font-semibold text-zinc-800 dark:text-zinc-100 mb-6">
+            Export guide:{" "}
+            <span className="text-zinc-500 dark:text-zinc-400 font-normal">{q}</span>
+          </h1>
+        )}
+
+        {loading && (
+          <div className="flex flex-col gap-6">
+            <div className="flex items-center gap-3 text-sm text-zinc-500">
+              <div className="flex gap-1">
+                <span
+                  className="w-2 h-2 rounded-full bg-zinc-400 animate-bounce"
+                  style={{ animationDelay: "0ms" }}
+                />
+                <span
+                  className="w-2 h-2 rounded-full bg-zinc-400 animate-bounce"
+                  style={{ animationDelay: "150ms" }}
+                />
+                <span
+                  className="w-2 h-2 rounded-full bg-zinc-400 animate-bounce"
+                  style={{ animationDelay: "300ms" }}
+                />
+              </div>
+              Researching export requirements for{" "}
+              <strong className="text-zinc-700 dark:text-zinc-300">{q}</strong>…
+            </div>
+
+            {/* Skeleton lines */}
+            <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 space-y-3 animate-pulse">
+              {[100, 80, 92, 60, 85, 70, 95, 55].map((w, i) => (
+                <div
+                  key={i}
+                  className="h-3 bg-zinc-200 dark:bg-zinc-700 rounded"
+                  style={{ width: `${w}%` }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm">
+            {error}
+          </div>
+        )}
+
+        {response && (
+          <div className="space-y-4">
+            <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
+              <ResponseBlock text={response} />
+            </div>
+
+            {tokenInfo && (
+              <p className="text-xs text-zinc-400 text-right">
+                {tokenInfo.input} input · {tokenInfo.output} output tokens ·
+                claude-sonnet-4-5
+              </p>
+            )}
+
+            <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800">
+              <p className="text-xs text-zinc-400 mb-3">Search for another product</p>
+              <form onSubmit={handleSearch} className="flex gap-2">
+                <input
+                  type="text"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder="e.g. canola oil, live cattle, maple syrup…"
+                  className="flex-1 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-100 placeholder-zinc-400 outline-none focus:ring-2 focus:ring-zinc-400"
+                />
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-sm bg-zinc-800 hover:bg-zinc-700 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-white rounded-lg transition-colors"
+                >
+                  Search
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {!loading && !error && !response && !q && (
+          <p className="text-zinc-400 text-sm">Enter a product above to get started.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Suspense boundary is required — useSearchParams suspends the component tree
+// until the client has hydrated. Without it the effect never fires.
+export default function SearchPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-white dark:bg-zinc-950 flex items-center justify-center">
+          <div className="flex gap-1">
+            <span className="w-2 h-2 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: "0ms" }} />
+            <span className="w-2 h-2 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: "150ms" }} />
+            <span className="w-2 h-2 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: "300ms" }} />
+          </div>
+        </div>
+      }
+    >
+      <SearchContent />
+    </Suspense>
+  );
+}
