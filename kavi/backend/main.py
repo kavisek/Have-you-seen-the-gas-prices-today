@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from controllers import (
+    claude_controller,
     health_controller,
     hs_codes_controller,
     marine_traffic_controller,
@@ -42,3 +43,4 @@ async def root():
 app.include_router(health_controller.router, prefix="/health", tags=["Health"])
 app.include_router(hs_codes_controller.router, prefix="/hs-codes", tags=["HS Codes"])
 app.include_router(marine_traffic_controller.router, prefix="/marine-traffic", tags=["Marine Traffic"])
+app.include_router(claude_controller.router, prefix="/claude", tags=["Claude"])

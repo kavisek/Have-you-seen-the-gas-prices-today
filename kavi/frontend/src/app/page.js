@@ -63,7 +63,7 @@ export default function Home() {
         <div className="absolute inset-0 -inset-x-24 -inset-y-16 rounded-3xl backdrop-blur-md bg-zinc-950/40 -z-10" />
 
         <h1 className="text-5xl font-bold tracking-tight text-zinc-800 dark:text-zinc-100">
-          Export<span className="text-blue-500">Min</span><span className="text-red-500">Max</span><span className="text-yellow-400">er</span>
+          Export<span className="text-red-600">Min</span><span className="text-white">Maxer</span>
         </h1>
 
         <p className="text-zinc-500 dark:text-zinc-400 text-sm">
