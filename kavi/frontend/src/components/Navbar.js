@@ -9,6 +9,7 @@ const links = [
   { href: "/", label: "Home" },
   { href: "/hs-codes", label: "HS Codes" },
   { href: "/hs-guide", label: "HS Guide" },
+  { href: "/tariff-intelligence", label: "Tariff Intelligence" },
   { href: "/about", label: "About" },
 ];
 
