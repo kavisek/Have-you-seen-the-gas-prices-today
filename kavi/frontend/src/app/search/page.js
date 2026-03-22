@@ -132,6 +132,7 @@ function SearchContent() {
   const [response, setResponse] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [citations, setCitations] = useState([]);
   const [tokenInfo, setTokenInfo] = useState(null);
   const abortRef = useRef(null);
 
@@ -153,6 +154,7 @@ function SearchContent() {
     setLoading(true);
     setError(null);
     setResponse(null);
+    setCitations([]);
     setTokenInfo(null);
 
     try {
@@ -172,6 +174,7 @@ function SearchContent() {
 
       const data = await res.json();
       setResponse(data.response);
+      setCitations(data.citations || []);
       setTokenInfo({ input: data.input_tokens, output: data.output_tokens });
     } catch (err) {
       if (err.name === "AbortError") return;
@@ -194,14 +197,6 @@ function SearchContent() {
       <div className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-6 py-4">
           <form onSubmit={handleSearch} className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => router.push("/")}
-              className="text-lg font-bold tracking-tight text-zinc-800 dark:text-zinc-100 shrink-0 hover:opacity-80 transition-opacity"
-            >
-              Export<span className="text-red-600">Min</span>
-              <span className="dark:text-white">Maxer</span>
-            </button>
             <div className="flex items-center flex-1 border border-zinc-300 dark:border-zinc-700 rounded-full px-4 py-2 bg-white dark:bg-zinc-900 gap-2 hover:shadow-sm transition-shadow">
               <svg
                 className="w-4 h-4 text-zinc-400 shrink-0"
@@ -257,6 +252,36 @@ function SearchContent() {
             <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
               <ResponseBlock text={response} />
             </div>
+
+            {citations.length > 0 && (
+              <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5">
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-3">
+                  References &amp; Sources
+                </h2>
+                <ol className="space-y-2">
+                  {citations.map((c, i) => (
+                    <li key={i} className="flex gap-2 text-sm">
+                      <span className="text-zinc-400 shrink-0 tabular-nums">{i + 1}.</span>
+                      <span>
+                        {c.url ? (
+                          <a
+                            href={c.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                          >
+                            {c.title}
+                          </a>
+                        ) : (
+                          <span className="font-medium text-zinc-700 dark:text-zinc-300">{c.title}</span>
+                        )}
+                        <span className="text-zinc-400 dark:text-zinc-500"> — {c.organization}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
 
             {tokenInfo && (
               <p className="text-xs text-zinc-400 text-right">

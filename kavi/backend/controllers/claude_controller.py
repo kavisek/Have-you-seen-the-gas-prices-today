@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from pydantic_ai import Agent
-from pydantic_ai.providers.anthropic import AnthropicProvider
 
 from logger import logger
 
@@ -74,14 +73,13 @@ class ChatResponse(BaseModel):
 # --- Agent (module-level, reused across requests) ---
 
 def _make_agent() -> Agent:
-    api_key = os.getenv("ANTHROPIC_API_KEY")
-    if not api_key:
+    if not os.getenv("ANTHROPIC_API_KEY"):
         raise RuntimeError("ANTHROPIC_API_KEY is not set")
     return Agent(
         MODEL,
         output_type=TradeAnalysis,
         system_prompt=TRADE_SYSTEM_PROMPT,
-        provider=AnthropicProvider(api_key=api_key),
+        output_retries=3,
     )
 
 
@@ -95,16 +93,20 @@ def get_agent() -> Agent:
     return _agent
 
 
-def build_message(user_query: str) -> str:
-    return f"## SYSTEM PROMPT\n\n{TRADE_SYSTEM_PROMPT}\n\n## USER QUERY\n\n{user_query}"
-
-
 @router.post("/chat", description="Chat with Claude Sonnet 4.5.", tags=["Claude"])
 async def chat(request: ChatRequest) -> ChatResponse:
+    if not request.message.strip():
+        raise HTTPException(status_code=400, detail="Message cannot be empty")
+
     logger.info(f"Claude chat request: {request.message[:80]!r}")
     try:
         agent = get_agent()
-        result = await agent.run(build_message(request.message))
+    except RuntimeError as e:
+        logger.error(f"Agent init error: {e}")
+        raise HTTPException(status_code=503, detail=str(e))
+
+    try:
+        result = await agent.run(f"## USER QUERY\n\n{request.message}")
         analysis: TradeAnalysis = result.output
         usage = result.usage()
         logger.info(f"Claude response ({usage.total_tokens} tokens): {analysis.report[:80]!r}")
@@ -115,9 +117,24 @@ async def chat(request: ChatRequest) -> ChatResponse:
             input_tokens=usage.request_tokens or 0,
             output_tokens=usage.response_tokens or 0,
         )
-    except RuntimeError as e:
-        logger.error(str(e))
-        raise HTTPException(status_code=500, detail=str(e))
+    except HTTPException:
+        raise
+    except ValueError as e:
+        logger.error(f"Claude response validation error: {e}")
+        raise HTTPException(status_code=502, detail="Claude returned an unexpected response format")
+    except TimeoutError:
+        logger.error("Claude request timed out")
+        raise HTTPException(status_code=504, detail="Claude API request timed out")
     except Exception as e:
+        error_str = str(e).lower()
+        if "rate limit" in error_str or "429" in error_str:
+            logger.error(f"Claude rate limit hit: {e}")
+            raise HTTPException(status_code=429, detail="Claude API rate limit reached — please try again shortly")
+        if "authentication" in error_str or "401" in error_str or "invalid api key" in error_str:
+            logger.error(f"Claude auth error: {e}")
+            raise HTTPException(status_code=503, detail="Claude API authentication failed")
+        if "overloaded" in error_str or "529" in error_str:
+            logger.error(f"Claude overloaded: {e}")
+            raise HTTPException(status_code=503, detail="Claude API is currently overloaded — please try again")
         logger.error(f"Claude chat error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="An unexpected error occurred while processing your request")

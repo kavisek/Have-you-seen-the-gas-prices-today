@@ -20,11 +20,21 @@ def get_df() -> pd.DataFrame:
     global _df
     if _df is None:
         logger.info(f"Loading HS codes from {CSV_PATH}")
-        _df = pd.read_csv(
-            CSV_PATH,
-            dtype=str,
-            usecols=["TARIFF", "DESC1", "DESC2", "DESC3", "UOM", "MFN", "UST", "GPT", "General Tariff"],
-        )
+        try:
+            _df = pd.read_csv(
+                CSV_PATH,
+                dtype=str,
+                usecols=["TARIFF", "DESC1", "DESC2", "DESC3", "UOM", "MFN", "UST", "GPT", "General Tariff"],
+            )
+        except FileNotFoundError:
+            raise
+        except pd.errors.EmptyDataError:
+            raise ValueError(f"HS codes CSV at {CSV_PATH} is empty")
+        except pd.errors.ParserError as e:
+            raise ValueError(f"Failed to parse HS codes CSV: {e}")
+        except KeyError as e:
+            raise ValueError(f"HS codes CSV is missing expected column: {e}")
+
         _df.fillna("", inplace=True)
         _df["description"] = (
             _df["DESC1"].str.strip()
@@ -54,22 +64,36 @@ async def list_hs_codes(
         df = get_df()
     except FileNotFoundError:
         raise HTTPException(status_code=503, detail=f"HS codes dataset not found at {CSV_PATH}")
+    except ValueError as e:
+        logger.error(f"HS codes data error: {e}")
+        raise HTTPException(status_code=503, detail=str(e))
+    except Exception as e:
+        logger.error(f"Unexpected error loading HS codes: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load HS codes dataset")
 
     if q:
-        mask = (
-            df["tariff"].str.contains(q, case=False, na=False)
-            | df["description"].str.contains(q, case=False, na=False)
-        )
-        df = df[mask]
+        try:
+            mask = (
+                df["tariff"].str.contains(q, case=False, na=False, regex=False)
+                | df["description"].str.contains(q, case=False, na=False, regex=False)
+            )
+            df = df[mask]
+        except Exception as e:
+            logger.error(f"Search filter error for query {q!r}: {e}")
+            raise HTTPException(status_code=400, detail=f"Invalid search query: {q!r}")
 
-    total = len(df)
-    start = (page - 1) * page_size
-    page_data = df.iloc[start : start + page_size]
+    try:
+        total = len(df)
+        start = (page - 1) * page_size
+        page_data = df.iloc[start : start + page_size]
 
-    return {
-        "total": total,
-        "page": page,
-        "page_size": page_size,
-        "pages": -(-total // page_size),
-        "data": page_data.to_dict(orient="records"),
-    }
+        return {
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "pages": -(-total // page_size),
+            "data": page_data.to_dict(orient="records"),
+        }
+    except Exception as e:
+        logger.error(f"Error paginating HS codes results: {e}")
+        raise HTTPException(status_code=500, detail="Failed to paginate results")
