@@ -52,6 +52,22 @@ async def set_cached(query: str, data: dict) -> None:
         logger.error(f"Redis set error (key={key}): {e}")
 
 
+async def list_keys() -> list[dict]:
+    try:
+        redis = get_redis()
+        keys = await redis.keys(f"{CACHE_KEY_PREFIX}*")
+        if not keys:
+            logger.info("Cache keys requested — no keys found")
+            return []
+        ttls = [await redis.ttl(key) for key in keys]
+        result = [{"key": key, "ttl_seconds": ttl} for key, ttl in zip(keys, ttls)]
+        logger.info(f"Cache keys listed: {len(result)} key(s)")
+        return result
+    except Exception as e:
+        logger.error(f"Redis list keys error: {e}")
+        raise
+
+
 async def clear_all() -> int:
     try:
         redis = get_redis()

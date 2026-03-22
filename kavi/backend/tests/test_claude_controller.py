@@ -10,6 +10,32 @@ import controllers.claude_controller as claude_ctrl
 
 # --- DELETE /claude/cache ---
 
+def test_list_cache_keys_returns_keys(client):
+    keys = [
+        {"key": "trade_analysis:abc123", "ttl_seconds": 3600},
+        {"key": "trade_analysis:def456", "ttl_seconds": 7200},
+    ]
+    with patch("cache.list_keys", new_callable=AsyncMock, return_value=keys):
+        response = client.get("/claude/cache/keys")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["count"] == 2
+    assert body["keys"] == keys
+
+
+def test_list_cache_keys_returns_empty_when_no_keys(client):
+    with patch("cache.list_keys", new_callable=AsyncMock, return_value=[]):
+        response = client.get("/claude/cache/keys")
+    assert response.status_code == 200
+    assert response.json() == {"count": 0, "keys": []}
+
+
+def test_list_cache_keys_returns_500_on_redis_error(client):
+    with patch("cache.list_keys", new_callable=AsyncMock, side_effect=Exception("redis down")):
+        response = client.get("/claude/cache/keys")
+    assert response.status_code == 500
+
+
 def test_clear_cache_returns_deleted_count(client):
     with patch.object(cache_module, "_redis", AsyncMock()) as _:
         with patch("cache.clear_all", new_callable=AsyncMock, return_value=3):

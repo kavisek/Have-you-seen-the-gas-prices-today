@@ -14,7 +14,7 @@ load_dotenv()
 
 router = APIRouter()
 
-MODEL = "anthropic:claude-sonnet-4-5"
+MODEL = "anthropic:claude-sonnet-4-6"
 
 TRADE_SYSTEM_PROMPT = """You are a Canadian trade compliance expert helping users export products to the United States.
 
@@ -223,6 +223,17 @@ async def chat_ws(websocket: WebSocket):
 
     except WebSocketDisconnect:
         logger.info("WebSocket connection closed")
+
+
+@router.get("/cache/keys", description="List all keys currently in the trade analysis cache.", tags=["Claude"])
+async def list_cache_keys():
+    logger.info("Cache keys listing requested")
+    try:
+        keys = await cache_module.list_keys()
+        return {"count": len(keys), "keys": keys}
+    except Exception as e:
+        logger.error(f"Cache keys listing failed: {e}")
+        raise HTTPException(status_code=500, detail="Failed to list cache keys")
 
 
 @router.delete("/cache", description="Clear all cached trade analysis results.", tags=["Claude"])
