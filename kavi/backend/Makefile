@@ -20,4 +20,4 @@ format:
 	uv run isort .
 
 test:
-	uv run pytest --cov=./tests -rAP -s -vvv
+	uv run python -m pytest --cov=./tests -rAP -s -vvv

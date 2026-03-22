@@ -7,6 +7,7 @@ from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 from pydantic_ai import Agent
 
+import cache as cache_module
 from logger import logger
 
 load_dotenv()
@@ -176,6 +177,12 @@ async def chat_ws(websocket: WebSocket):
             logger.info(f"WebSocket chat request: {message[:80]!r}")
             await websocket.send_text(json.dumps({"type": "status", "status": "thinking"}))
 
+            cached = await cache_module.get_cached(message)
+            if cached:
+                logger.info("Returning cached result via WebSocket")
+                await websocket.send_text(json.dumps({"type": "result", **cached}))
+                continue
+
             try:
                 agent = get_agent()
             except RuntimeError as e:
@@ -191,14 +198,16 @@ async def chat_ws(websocket: WebSocket):
                 if llm_calls > 1:
                     logger.warning(f"pydantic_ai made {llm_calls} LLM calls (output validation retries) for this request")
                 logger.info(f"WebSocket response ({usage.total_tokens} tokens, {llm_calls} LLM calls): {analysis.report[:80]!r}")
-                await websocket.send_text(json.dumps({
+                payload = {
                     "type": "result",
                     "response": analysis.report,
                     "citations": [c.model_dump() for c in analysis.citations],
                     "model": MODEL,
                     "input_tokens": usage.request_tokens or 0,
                     "output_tokens": usage.response_tokens or 0,
-                }))
+                }
+                await cache_module.set_cached(message, {k: v for k, v in payload.items() if k != "type"})
+                await websocket.send_text(json.dumps(payload))
             except Exception as e:
                 error_str = str(e).lower()
                 if "rate limit" in error_str or "429" in error_str:
@@ -214,3 +223,15 @@ async def chat_ws(websocket: WebSocket):
 
     except WebSocketDisconnect:
         logger.info("WebSocket connection closed")
+
+
+@router.delete("/cache", description="Clear all cached trade analysis results.", tags=["Claude"])
+async def clear_cache():
+    logger.info("Cache clear requested")
+    try:
+        count = await cache_module.clear_all()
+        logger.info(f"Cache clear complete: {count} key(s) removed")
+        return {"deleted": count}
+    except Exception as e:
+        logger.error(f"Cache clear failed: {e}")
+        raise HTTPException(status_code=500, detail="Failed to clear cache")
