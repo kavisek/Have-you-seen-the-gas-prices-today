@@ -142,3 +142,5 @@ dmypy.json
 !**/output/.gitkee
 cloud_sql_proxy
 .vscode/
+.claude/
+.cursor/
