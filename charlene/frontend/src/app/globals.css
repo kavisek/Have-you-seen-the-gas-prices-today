@@ -24,3 +24,49 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.scanline {
+  background: linear-gradient(to bottom, rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+    linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  background-size: 100% 4px, 3px 100%;
+  pointer-events: none;
+}
+
+.floating-tag-crawl {
+  position: absolute;
+  left: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.4;
+  white-space: nowrap;
+  animation-duration: var(--crawl-duration, 28s);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-delay: var(--crawl-delay, 0s);
+}
+
+.floating-tag-crawl--ltr {
+  animation-name: float-across-ltr;
+}
+
+.floating-tag-crawl--rtl {
+  animation-name: float-across-rtl;
+}
+
+@keyframes float-across-ltr {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(calc(100vw + 100%));
+  }
+}
+
+@keyframes float-across-rtl {
+  from {
+    transform: translateX(calc(100vw + 100%));
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}

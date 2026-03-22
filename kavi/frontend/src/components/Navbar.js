@@ -33,33 +33,46 @@ export default function Navbar() {
   }, [pathname, router]);
 
   return (
-    <nav className="w-full border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-6 py-3">
-      <div className="max-w-6xl mx-auto flex items-center gap-8">
-        <Link href="/" className="text-lg font-bold tracking-tight text-zinc-800 dark:text-zinc-100">
-          Export<span className="text-red-600">Min</span><span className="text-zinc-900 dark:text-white">Maxer</span>
-        </Link>
-        <div className="flex items-center gap-6">
-          {links.map(({ href, label }) => (
+    <nav className="fixed top-0 z-50 flex h-20 w-full items-center justify-between border-b-4 border-primary bg-background px-4 shadow-[4px_4px_0px_0px_rgba(255,171,243,1)] md:px-8">
+      <Link
+        href="/"
+        className="font-headline text-xl font-black uppercase tracking-widest text-primary md:text-2xl"
+      >
+        ExportMinMaxer
+      </Link>
+      <div className="hidden items-center gap-6 md:flex md:gap-10">
+        {links.map(({ href, label }) => {
+          const active = pathname === href;
+          return (
             <Link
               key={href}
               href={href}
-              className={`text-sm transition-colors ${
-                pathname === href
-                  ? "text-blue-500 font-medium"
-                  : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+              className={`font-headline px-2 uppercase tracking-tighter transition-colors duration-0 hover:bg-primary hover:text-background ${
+                active
+                  ? "border-b-2 border-primary pb-1 text-primary"
+                  : "text-secondary opacity-70"
               }`}
             >
               {label}
             </Link>
-          ))}
-        </div>
+          );
+        })}
+      </div>
+      <div className="flex items-center gap-2">
         <button
+          type="button"
           onClick={toggle}
-          className="ml-auto text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors text-lg"
-          aria-label="Toggle light/dark mode"
+          className="font-headline border-2 border-outline-variant px-2 py-1 text-[10px] font-bold uppercase text-on-surface-variant hover:border-primary hover:text-primary"
+          aria-label={dark ? "Switch to light theme" : "Switch to dark theme"}
         >
-          {dark ? "☀️" : "🌙"}
+          {dark ? "LGT" : "DRK"}
         </button>
+        <Link
+          href="/search"
+          className="font-headline bg-primary px-4 py-2 text-sm font-bold uppercase text-on-primary shadow-[4px_4px_0px_0px_rgba(81,0,81,1)] transition-transform active:translate-y-0.5 active:shadow-none md:px-6"
+        >
+          Query
+        </Link>
       </div>
     </nav>
   );

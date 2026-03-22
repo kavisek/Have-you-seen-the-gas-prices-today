@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 
-const ThemeContext = createContext({ dark: true, toggle: () => {}, lightFlashGen: 0 });
+const ThemeContext = createContext({ dark: true, toggle: () => {} });
 
 export function useTheme() {
   return useContext(ThemeContext);
@@ -10,7 +10,6 @@ export function useTheme() {
 
 export function ThemeProvider({ children }) {
   const [dark, setDark] = useState(true);
-  const [lightFlashGen, setLightFlashGen] = useState(0);
 
   useEffect(() => {
     const stored = localStorage.getItem("theme");
@@ -22,16 +21,13 @@ export function ThemeProvider({ children }) {
 
   function toggle() {
     const next = !dark;
-    if (dark && !next) {
-      setLightFlashGen((g) => g + 1);
-    }
     setDark(next);
     document.documentElement.classList.toggle("dark", next);
     localStorage.setItem("theme", next ? "dark" : "light");
   }
 
   return (
-    <ThemeContext.Provider value={{ dark, toggle, lightFlashGen }}>
+    <ThemeContext.Provider value={{ dark, toggle }}>
       {children}
     </ThemeContext.Provider>
   );

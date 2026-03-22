@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
@@ -41,6 +40,7 @@ function LoadingStatus() {
         <div className="absolute inset-0 border-4 border-outline-variant" />
         <div className="absolute inset-0 animate-spin border-4 border-transparent border-t-secondary-fixed" />
       </div>
+
       <p
         className="font-pixel max-w-xs text-center text-[10px] uppercase text-on-surface-variant transition-opacity duration-400"
         style={{ opacity: visible ? 1 : 0 }}
@@ -52,8 +52,6 @@ function LoadingStatus() {
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4002";
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:4002";
-
 
 function renderInline(text) {
   const parts = text.split(/(\*\*[^*]+\*\*)/g);
@@ -86,7 +84,6 @@ function ResponseBlock({ text }) {
           );
         }
 
-        // Markdown headings like ## Title or # Title
         const mdHeading = line.match(/^#{1,3}\s+(.*)/);
         if (mdHeading) {
           return (
@@ -129,102 +126,60 @@ function SearchContent() {
   const [response, setResponse] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [citations, setCitations] = useState([]);
   const [tokenInfo, setTokenInfo] = useState(null);
-  const wsRef = useRef(null);
+  const abortRef = useRef(null);
 
   useEffect(() => {
     if (!q.trim()) return;
     setInputValue(q);
     fetchAnswer(q);
     return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
-      }
+      if (abortRef.current) abortRef.current.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q]);
 
-  function fetchAnswer(product) {
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
-    }
+  async function fetchAnswer(product) {
+    if (abortRef.current) abortRef.current.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
 
     setLoading(true);
     setError(null);
     setResponse(null);
-    setCitations([]);
     setTokenInfo(null);
 
-    const ws = new WebSocket(`${WS_URL}/claude/ws`);
-    wsRef.current = ws;
+    try {
+      const res = await fetch(`${API_URL}/claude/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: `What do I need to know to export "${product}" from Canada to the United States? Cover HS codes, tariffs, permits, regulations, and required documents.`,
+        }),
+        signal: controller.signal,
+      });
 
-    ws.onopen = () => {
-      ws.send(JSON.stringify({
-        message: `What do I need to know to export "${product}" from Canada to the United States? Cover HS codes, tariffs, permits, regulations, and required documents.`,
-      }));
-    };
-
-    ws.onmessage = (event) => {
-      if (wsRef.current !== ws) return;
-      let data;
-      try {
-        data = JSON.parse(event.data);
-      } catch {
-        return;
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: res.statusText }));
+        throw new Error(err.detail || `Server error: ${res.status}`);
       }
 
-      if (data.type === "status") return;
-
-      if (data.type === "error") {
-        setError(data.detail || "An error occurred");
-        setLoading(false);
-        ws.close();
-        wsRef.current = null;
-        return;
-      }
-
-      if (data.type === "result") {
-        const apply = () => {
-          if (wsRef.current !== ws && !data.cached) return;
-          setResponse(data.response);
-          setCitations(data.citations || []);
-          setTokenInfo({ input: data.input_tokens, output: data.output_tokens });
-          setLoading(false);
-        };
-        ws.close();
-        wsRef.current = null;
-        if (data.cached) {
-          setTimeout(apply, 7000);
-        } else {
-          apply();
-        }
-      }
-    };
-
-    ws.onerror = () => {
-      if (wsRef.current !== ws) return;
-      setError("WebSocket connection failed. Please try again.");
+      const data = await res.json();
+      setResponse(data.response);
+      setTokenInfo({ input: data.input_tokens, output: data.output_tokens });
+    } catch (err) {
+      if (err.name === "AbortError") return;
+      setError(err.message);
+    } finally {
       setLoading(false);
-      wsRef.current = null;
-    };
-
-    ws.onclose = () => {
-      if (wsRef.current === ws) wsRef.current = null;
-    };
+    }
   }
 
   function handleSearch(e) {
     e.preventDefault();
     const trimmed = inputValue.trim();
     if (!trimmed) return;
-    if (trimmed === q) {
-      fetchAnswer(trimmed);
-    } else {
-      router.push(`/search?q=${encodeURIComponent(trimmed)}`);
-    }
+    router.push(`/search?q=${encodeURIComponent(trimmed)}`);
   }
 
   return (
@@ -232,20 +187,21 @@ function SearchContent() {
       <div className="sticky top-20 z-20 flex w-full border-b-4 border-primary bg-background shadow-[4px_4px_0px_0px_rgba(255,171,243,0.35)]">
         <div className="mx-auto w-full max-w-3xl px-4 py-4 md:px-6">
           <form onSubmit={handleSearch} className="flex flex-wrap items-center gap-3">
-            <Link
-              href="/"
+            <button
+              type="button"
+              onClick={() => router.push("/")}
               className="font-headline shrink-0 text-lg font-black uppercase tracking-tighter text-primary transition-opacity hover:opacity-80"
             >
               ExportMinMaxer
-            </Link>
+            </button>
             <div className="group flex min-w-0 flex-1 items-center gap-2 border-2 border-outline-variant bg-background px-4 py-2 transition-colors focus-within:border-secondary-fixed">
               <span className="font-pixel shrink-0 text-secondary-fixed">&gt;</span>
               <input
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Search product or HS keyword..."
-                className="min-w-0 flex-1 border-none bg-transparent font-pixel text-sm uppercase text-secondary-fixed outline-none ring-0 placeholder:text-outline-variant focus:ring-0"
+                placeholder="SEARCH PRODUCT OR HS KEYWORD..."
+                className="min-w-0 flex-1 border-none bg-transparent font-pixel text-sm uppercase text-secondary-fixed outline-none ring-0 placeholder:text-outline-variant"
               />
               <span className="ml-1 h-6 w-0.5 shrink-0 animate-pulse bg-secondary-fixed" />
             </div>
@@ -279,36 +235,6 @@ function SearchContent() {
             <div className="border-2 border-outline-variant bg-surface-container p-6">
               <ResponseBlock text={response} />
             </div>
-
-            {citations.length > 0 && (
-              <div className="border-2 border-outline-variant bg-surface-container p-5">
-                <h2 className="font-headline mb-3 text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                  References &amp; sources
-                </h2>
-                <ol className="space-y-2">
-                  {citations.map((c, i) => (
-                    <li key={i} className="flex gap-2 text-sm">
-                      <span className="shrink-0 tabular-nums text-outline">{i + 1}.</span>
-                      <span>
-                        {c.url ? (
-                          <a
-                            href={c.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-medium text-secondary-fixed underline hover:bg-secondary-fixed hover:text-background"
-                          >
-                            {c.title}
-                          </a>
-                        ) : (
-                          <span className="font-medium text-on-surface">{c.title}</span>
-                        )}
-                        <span className="text-on-surface-variant"> — {c.organization}</span>
-                      </span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            )}
 
             {tokenInfo && (
               <p className="font-pixel text-right text-[9px] uppercase text-on-surface-variant">
@@ -345,17 +271,24 @@ function SearchContent() {
   );
 }
 
-// Suspense boundary is required — useSearchParams suspends the component tree
-// until the client has hydrated. Without it the effect never fires.
 export default function SearchPage() {
   return (
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center bg-background retro-grid">
           <div className="flex gap-2">
-            <span className="h-2 w-2 animate-bounce bg-tertiary" style={{ animationDelay: "0ms" }} />
-            <span className="h-2 w-2 animate-bounce bg-primary" style={{ animationDelay: "150ms" }} />
-            <span className="h-2 w-2 animate-bounce bg-secondary-fixed" style={{ animationDelay: "300ms" }} />
+            <span
+              className="h-2 w-2 animate-bounce bg-tertiary"
+              style={{ animationDelay: "0ms" }}
+            />
+            <span
+              className="h-2 w-2 animate-bounce bg-primary"
+              style={{ animationDelay: "150ms" }}
+            />
+            <span
+              className="h-2 w-2 animate-bounce bg-secondary-fixed"
+              style={{ animationDelay: "300ms" }}
+            />
           </div>
         </div>
       }

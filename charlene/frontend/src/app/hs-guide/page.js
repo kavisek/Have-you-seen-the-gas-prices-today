@@ -91,25 +91,13 @@ export default function HSGuidePage() {
             <h2 className="font-headline mb-2 text-base font-bold uppercase text-primary">How to Search</h2>
             <ul className="list-inside list-disc space-y-1.5 font-pixel text-[10px] uppercase text-on-surface-variant">
               <li>
-                Enter a numeric HS code (e.g.{" "}
-                <code className="border border-outline-variant bg-surface-container px-1 font-mono text-secondary-fixed">
-                  8703
-                </code>
-                ) to find all tariff items under that heading.
+                Enter a numeric HS code (e.g. <code className="border border-outline-variant bg-surface-container px-1 font-mono text-secondary-fixed">8703</code>) to find all tariff items under that heading.
               </li>
               <li>
-                Enter a keyword (e.g.{" "}
-                <code className="border border-outline-variant bg-surface-container px-1 font-mono text-secondary-fixed">
-                  canola
-                </code>
-                ) to search product descriptions.
+                Enter a keyword (e.g. <code className="border border-outline-variant bg-surface-container px-1 font-mono text-secondary-fixed">canola</code>) to search product descriptions.
               </li>
               <li>
-                Combine both (e.g.{" "}
-                <code className="border border-outline-variant bg-surface-container px-1 font-mono text-secondary-fixed">
-                  1205 rapeseed
-                </code>
-                ) to narrow results.
+                Combine both (e.g. <code className="border border-outline-variant bg-surface-container px-1 font-mono text-secondary-fixed">1205 rapeseed</code>) to narrow results.
               </li>
               <li>Results are paginated — use Previous / Next to navigate.</li>
             </ul>

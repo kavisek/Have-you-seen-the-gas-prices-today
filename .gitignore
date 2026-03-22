@@ -1,2 +1,6 @@
 .claude/
 .cursor/
+
+# Stray root copies; use kavi/ and charlene/ for app code
+/backend/
+/frontend/
