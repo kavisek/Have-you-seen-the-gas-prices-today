@@ -54,6 +54,7 @@ function LoadingStatus() {
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4002";
+const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:4002";
 
 
 function renderInline(text) {
@@ -134,22 +135,26 @@ function SearchContent() {
   const [error, setError] = useState(null);
   const [citations, setCitations] = useState([]);
   const [tokenInfo, setTokenInfo] = useState(null);
-  const abortRef = useRef(null);
+  const wsRef = useRef(null);
 
   useEffect(() => {
     if (!q.trim()) return;
     setInputValue(q);
     fetchAnswer(q);
     return () => {
-      if (abortRef.current) abortRef.current.abort();
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q]);
 
-  async function fetchAnswer(product) {
-    if (abortRef.current) abortRef.current.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
+  function fetchAnswer(product) {
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
 
     setLoading(true);
     setError(null);
@@ -157,31 +162,52 @@ function SearchContent() {
     setCitations([]);
     setTokenInfo(null);
 
-    try {
-      const res = await fetch(`${API_URL}/claude/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: `What do I need to know to export "${product}" from Canada to the United States? Cover HS codes, tariffs, permits, regulations, and required documents.`,
-        }),
-        signal: controller.signal,
-      });
+    const ws = new WebSocket(`${WS_URL}/claude/ws`);
+    wsRef.current = ws;
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ detail: res.statusText }));
-        throw new Error(err.detail || `Server error: ${res.status}`);
+    ws.onopen = () => {
+      ws.send(JSON.stringify({
+        message: `What do I need to know to export "${product}" from Canada to the United States? Cover HS codes, tariffs, permits, regulations, and required documents.`,
+      }));
+    };
+
+    ws.onmessage = (event) => {
+      let data;
+      try {
+        data = JSON.parse(event.data);
+      } catch {
+        return;
       }
 
-      const data = await res.json();
-      setResponse(data.response);
-      setCitations(data.citations || []);
-      setTokenInfo({ input: data.input_tokens, output: data.output_tokens });
-    } catch (err) {
-      if (err.name === "AbortError") return;
-      setError(err.message);
-    } finally {
+      if (data.type === "status") return;
+
+      if (data.type === "error") {
+        setError(data.detail || "An error occurred");
+        setLoading(false);
+        ws.close();
+        wsRef.current = null;
+        return;
+      }
+
+      if (data.type === "result") {
+        setResponse(data.response);
+        setCitations(data.citations || []);
+        setTokenInfo({ input: data.input_tokens, output: data.output_tokens });
+        setLoading(false);
+        ws.close();
+        wsRef.current = null;
+      }
+    };
+
+    ws.onerror = () => {
+      setError("WebSocket connection failed. Please try again.");
       setLoading(false);
-    }
+      wsRef.current = null;
+    };
+
+    ws.onclose = () => {
+      wsRef.current = null;
+    };
   }
 
   function handleSearch(e) {

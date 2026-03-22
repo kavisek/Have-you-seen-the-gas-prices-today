@@ -1,7 +1,8 @@
+import json
 import os
 
 from dotenv import load_dotenv
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 from pydantic_ai import Agent
 
@@ -138,3 +139,61 @@ async def chat(request: ChatRequest) -> ChatResponse:
             raise HTTPException(status_code=503, detail="Claude API is currently overloaded — please try again")
         logger.error(f"Claude chat error: {e}")
         raise HTTPException(status_code=500, detail="An unexpected error occurred while processing your request")
+
+
+@router.websocket("/ws")
+async def chat_ws(websocket: WebSocket):
+    await websocket.accept()
+    logger.info("WebSocket connection established")
+    try:
+        while True:
+            raw = await websocket.receive_text()
+            try:
+                payload = json.loads(raw)
+                message = payload.get("message", "").strip()
+            except (json.JSONDecodeError, AttributeError):
+                await websocket.send_text(json.dumps({"type": "error", "detail": "Invalid JSON"}))
+                continue
+
+            if not message:
+                await websocket.send_text(json.dumps({"type": "error", "detail": "Message cannot be empty"}))
+                continue
+
+            logger.info(f"WebSocket chat request: {message[:80]!r}")
+            await websocket.send_text(json.dumps({"type": "status", "status": "thinking"}))
+
+            try:
+                agent = get_agent()
+            except RuntimeError as e:
+                logger.error(f"Agent init error: {e}")
+                await websocket.send_text(json.dumps({"type": "error", "detail": str(e)}))
+                continue
+
+            try:
+                result = await agent.run(f"## USER QUERY\n\n{message}")
+                analysis: TradeAnalysis = result.output
+                usage = result.usage()
+                logger.info(f"WebSocket response ({usage.total_tokens} tokens): {analysis.report[:80]!r}")
+                await websocket.send_text(json.dumps({
+                    "type": "result",
+                    "response": analysis.report,
+                    "citations": [c.model_dump() for c in analysis.citations],
+                    "model": MODEL,
+                    "input_tokens": usage.request_tokens or 0,
+                    "output_tokens": usage.response_tokens or 0,
+                }))
+            except Exception as e:
+                error_str = str(e).lower()
+                if "rate limit" in error_str or "429" in error_str:
+                    detail = "Claude API rate limit reached — please try again shortly"
+                elif "authentication" in error_str or "401" in error_str:
+                    detail = "Claude API authentication failed"
+                elif "overloaded" in error_str or "529" in error_str:
+                    detail = "Claude API is currently overloaded — please try again"
+                else:
+                    detail = "An unexpected error occurred while processing your request"
+                logger.error(f"WebSocket chat error: {e}")
+                await websocket.send_text(json.dumps({"type": "error", "detail": detail}))
+
+    except WebSocketDisconnect:
+        logger.info("WebSocket connection closed")
