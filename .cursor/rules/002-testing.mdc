@@ -1,0 +1,588 @@
+---
+description: Testing guidelines using pytest with coverage. Apply when working on test files or writing new tests.
+globs: ["tests/**/*.py", "**/test_*.py", "**/*_test.py", "**/conftest.py"]
+alwaysApply: false
+---
+
+# Testing Instructions for Python Applications
+
+## Test Framework
+
+This project uses **pytest** with coverage reporting.
+
+## Running Tests
+
+### Run All Tests
+
+```bash
+# From the app/ directory
+cd app
+make test
+```
+
+Or directly with pytest:
+
+```bash
+pytest
+```
+
+### Run Tests in Docker Container
+
+To run tests inside a Docker container (recommended for consistency):
+
+```bash
+# Build the Docker image
+cd app
+docker build -t python-app-test .
+
+# Run tests in container
+docker run --rm python-app-test pytest
+
+# Run tests with coverage in container
+docker run --rm python-app-test pytest --cov=app --cov-report=term-missing
+
+# Run tests with verbose output in container
+docker run --rm python-app-test pytest -v
+
+# Run specific test file in container
+docker run --rm python-app-test pytest tests/test_module.py
+```
+
+Note: You may need to modify the `Dockerfile` CMD line temporarily or create a separate `Dockerfile.test` for running tests. To make the Dockerfile work for both running the app and tests, you can override the CMD:
+
+```dockerfile
+# Dockerfile optimized for testing
+FROM python:3.10
+
+WORKDIR /app
+
+COPY requirements.txt /app/
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# Install test dependencies
+RUN pip3 install --no-cache-dir pytest pytest-cov
+
+COPY . /app
+
+# Default command runs the app, but can be overridden
+CMD ["python3", "main.py"]
+```
+
+### Run Specific Test File
+
+```bash
+pytest tests/test_module.py
+```
+
+### Run Specific Test Function
+
+```bash
+pytest tests/test_module.py::test_function_name
+```
+
+### Run with Verbose Output
+
+```bash
+pytest -v
+```
+
+### Run with Coverage Report
+
+```bash
+pytest --cov=app --cov-report=html
+```
+
+This generates an HTML coverage report in `htmlcov/index.html`.
+
+### Run with Coverage in Terminal
+
+```bash
+pytest --cov=app --cov-report=term-missing
+```
+
+## Test Structure
+
+```
+tests/
+├── __init__.py
+├── test_module1.py
+├── test_module2.py
+└── conftest.py              # Shared fixtures
+```
+
+## Writing Tests
+
+### Test File Naming
+
+- Test files should be named `test_*.py` or `*_test.py`
+- Test functions should be named `test_*`
+- Test classes should be named `Test*`
+
+### Example Test Structure
+
+```python
+import pytest
+from app.module import MyClass, my_function
+
+def test_function_returns_expected_value():
+    """Test that function returns correct value for valid input."""
+    result = my_function(42)
+    assert result == 84
+
+def test_function_raises_on_invalid_input():
+    """Test that function raises ValueError for invalid input."""
+    with pytest.raises(ValueError):
+        my_function(-1)
+
+class TestMyClass:
+    """Test suite for MyClass."""
+    
+    def test_initialization(self):
+        """Test that MyClass initializes correctly."""
+        obj = MyClass("test")
+        assert obj.name == "test"
+    
+    def test_method_behavior(self):
+        """Test that method behaves as expected."""
+        obj = MyClass("test")
+        result = obj.process()
+        assert result is not None
+```
+
+## Using Fixtures
+
+### Basic Fixtures
+
+```python
+import pytest
+
+@pytest.fixture
+def sample_data():
+    """Provide sample data for tests."""
+    return {"key": "value", "count": 42}
+
+def test_with_fixture(sample_data):
+    """Test using fixture data."""
+    assert sample_data["count"] == 42
+```
+
+### Setup and Teardown
+
+```python
+@pytest.fixture
+def database_connection():
+    """Create database connection for testing."""
+    # Setup
+    conn = create_connection()
+    yield conn
+    # Teardown
+    conn.close()
+
+def test_database_query(database_connection):
+    """Test database query."""
+    result = database_connection.query("SELECT * FROM users")
+    assert len(result) > 0
+```
+
+## Mocking External Dependencies
+
+### Mock External API Calls
+
+```python
+from unittest.mock import patch, MagicMock
+
+def test_api_call_mocked():
+    """Test API call with mocked response."""
+    with patch('app.module.requests.get') as mock_get:
+        # Mock the response
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"data": "test"}
+        mock_get.return_value = mock_response
+        
+        result = fetch_data_from_api()
+        assert result["data"] == "test"
+        mock_get.assert_called_once()
+```
+
+### Mock File Operations
+
+```python
+from unittest.mock import mock_open, patch
+
+def test_file_reading():
+    """Test file reading with mocked file."""
+    mock_file_content = "line1\nline2\nline3"
+    
+    with patch('builtins.open', mock_open(read_data=mock_file_content)):
+        result = read_file("test.txt")
+        assert len(result) == 3
+```
+
+## Parametrized Tests
+
+```python
+@pytest.mark.parametrize("input_value,expected", [
+    (1, 2),
+    (2, 4),
+    (3, 6),
+    (5, 10),
+])
+def test_multiply_by_two(input_value, expected):
+    """Test multiplication with various inputs."""
+    assert multiply_by_two(input_value) == expected
+```
+
+## Code Coverage Requirements
+
+- Aim for **80%+ code coverage** on new code
+- Critical paths should have **95%+ coverage**
+- Edge cases and error handling must be tested
+- Don't write tests just to hit coverage targets; write meaningful tests
+
+## Test Categories
+
+### Unit Tests
+
+Test individual functions and methods in isolation:
+
+```python
+def test_calculate_total():
+    """Test total calculation with valid inputs."""
+    assert calculate_total([1, 2, 3]) == 6
+
+def test_calculate_total_empty_list():
+    """Test total calculation with empty list."""
+    assert calculate_total([]) == 0
+```
+
+### Integration Tests
+
+Test how components work together:
+
+```python
+def test_full_workflow():
+    """Test complete workflow from input to output."""
+    input_data = load_input("test_data.json")
+    processed = process_data(input_data)
+    result = save_output(processed)
+    assert result.success is True
+```
+
+### End-to-End Tests
+
+Test the entire application flow:
+
+```python
+def test_cli_command():
+    """Test CLI command execution."""
+    from click.testing import CliRunner
+    from app.cli import main
+    
+    runner = CliRunner()
+    result = runner.invoke(main, ['--help'])
+    assert result.exit_code == 0
+```
+
+## Pre-commit Testing
+
+Before committing code:
+
+```bash
+# Run tests locally
+pytest
+
+# Run tests with coverage
+pytest --cov=app --cov-report=term-missing
+
+# Format code
+black .
+isort .
+
+# Type checking (if using mypy)
+mypy .
+```
+
+### Pre-commit Testing in Docker
+
+For consistency with production environment, run tests in Docker before committing:
+
+```bash
+cd app
+
+# Build and run tests in one command
+docker build -t python-app-test . && docker run --rm python-app-test pytest --cov=app
+
+# If tests pass, proceed with formatting and commit
+black .
+isort .
+git add .
+git commit -m "Your commit message"
+```
+
+## Continuous Integration
+
+When CI/CD is set up, tests should run automatically on:
+- Pull requests
+- Commits to main branch
+- Release tags
+
+### Example GitHub Actions workflow (with Docker):
+
+```yaml
+name: Tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build Docker image
+        run: |
+          cd app
+          docker build -t python-app-test .
+      - name: Run tests in Docker
+        run: |
+          docker run --rm python-app-test pytest --cov=app --cov-report=xml
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
+```
+
+### Alternative: Without Docker
+
+```yaml
+name: Tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+      - run: |
+          cd app
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+          pytest --cov=app
+```
+
+## Common Test Scenarios
+
+### 1. Function Tests
+- Valid inputs
+- Invalid inputs
+- Edge cases (empty, None, zero)
+- Boundary conditions
+- Type checking
+
+### 2. Class Tests
+- Initialization
+- Method behavior
+- State management
+- Inheritance
+- Magic methods
+
+### 3. Error Handling Tests
+- Exception raising
+- Error messages
+- Recovery mechanisms
+- Logging behavior
+
+### 4. I/O Tests
+- File operations
+- Network requests
+- Database operations
+- External API calls
+
+## Debugging Failed Tests
+
+### View Full Error Output
+
+```bash
+pytest -vv
+```
+
+### Run Only Failed Tests
+
+```bash
+pytest --lf  # --last-failed
+```
+
+### Run Failed Tests First
+
+```bash
+pytest --ff  # --failed-first
+```
+
+### Drop into Debugger on Failure
+
+```bash
+pytest --pdb
+```
+
+### Print Output During Tests
+
+```bash
+pytest -s  # --capture=no
+```
+
+## Performance Testing
+
+For performance-critical operations:
+
+```python
+import time
+
+def test_performance():
+    """Test that operation completes in reasonable time."""
+    start = time.time()
+    result = expensive_operation()
+    duration = time.time() - start
+    assert duration < 1.0, f"Operation took {duration}s, expected < 1s"
+    assert result is not None
+```
+
+## Testing Async Code
+
+```python
+import pytest
+
+@pytest.mark.asyncio
+async def test_async_function():
+    """Test asynchronous function."""
+    result = await async_operation()
+    assert result == "expected"
+```
+
+## Test Environment
+
+### Required Dependencies
+
+Add to `requirements-dev.txt` or `requirements.txt`:
+
+```
+pytest>=7.0.0
+pytest-cov>=4.0.0
+pytest-asyncio>=0.21.0  # if testing async code
+pytest-mock>=3.10.0     # if using pytest-mock
+```
+
+### Docker Test Environment
+
+When running tests in Docker, ensure your `Dockerfile` includes test dependencies. You have two options:
+
+**Option 1: Separate requirements file**
+```bash
+# requirements-dev.txt
+pytest>=7.0.0
+pytest-cov>=4.0.0
+```
+
+```dockerfile
+# Dockerfile
+FROM python:3.10
+
+WORKDIR /app
+
+COPY requirements.txt requirements-dev.txt /app/
+RUN pip3 install --no-cache-dir -r requirements.txt && \
+    pip3 install --no-cache-dir -r requirements-dev.txt
+
+COPY . /app
+
+CMD ["python3", "main.py"]
+```
+
+**Option 2: Install test packages directly in Dockerfile**
+```dockerfile
+# Dockerfile (located at app/Dockerfile)
+FROM python:3.10
+
+WORKDIR /app
+
+COPY requirements.txt /app/
+RUN pip3 install --no-cache-dir -r requirements.txt && \
+    pip3 install --no-cache-dir pytest pytest-cov
+
+COPY . /app
+
+CMD ["python3", "main.py"]
+```
+
+To run tests, override the CMD:
+```bash
+docker run --rm python-app-test pytest
+```
+
+### Environment Variables
+
+For tests requiring environment variables:
+
+```python
+import os
+import pytest
+
+@pytest.fixture
+def set_test_env():
+    """Set test environment variables."""
+    os.environ['TEST_MODE'] = 'true'
+    yield
+    del os.environ['TEST_MODE']
+
+def test_with_env(set_test_env):
+    """Test with environment variables."""
+    assert os.getenv('TEST_MODE') == 'true'
+```
+
+## Best Practices
+
+1. **Isolate Tests**: Each test should be independent
+2. **Mock External Services**: Don't make real network calls in unit tests
+3. **Test Edge Cases**: Empty inputs, None values, boundary conditions
+4. **Keep Tests Fast**: Unit tests should complete in milliseconds
+5. **Clear Test Names**: Use descriptive names that explain what's being tested
+6. **Arrange-Act-Assert**: Structure tests clearly:
+   - **Arrange**: Set up test data
+   - **Act**: Execute the code under test
+   - **Assert**: Verify the results
+7. **Test Both Success and Failure**: Cover happy path and error cases
+8. **Don't Test Implementation Details**: Test behavior, not internal structure
+9. **Use Fixtures for Setup**: Share common setup code across tests
+10. **Keep Tests Maintainable**: Refactor tests as you refactor code
+
+## Troubleshooting
+
+### Import Errors
+
+Make sure you're running tests from the correct directory:
+```bash
+cd app
+pytest
+```
+
+Or install the package in development mode:
+```bash
+pip install -e .
+```
+
+### Coverage Not Showing All Files
+
+Ensure the coverage path is correct:
+```bash
+pytest --cov=app --cov-report=term-missing
+```
+
+### Fixtures Not Found
+
+Check that `conftest.py` is in the correct location and properly named.
+
+### Tests Pass Locally but Fail in CI
+
+- Check for environment-specific dependencies
+- Verify all dependencies are in `requirements.txt`
+- Ensure tests don't depend on local file paths
+- Check for timing-dependent tests (add appropriate delays/timeouts)
