@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
@@ -188,7 +187,8 @@ function SearchContent() {
 
       if (data.type === "result") {
         const apply = () => {
-          if (wsRef.current !== ws && !data.cached) return;
+          // Guard against results from a stale ws when a newer search is already in flight
+          if (wsRef.current !== null && wsRef.current !== ws) return;
           setResponse(data.response);
           setCitations(data.citations || []);
           setTokenInfo({ input: data.input_tokens, output: data.output_tokens });
@@ -232,12 +232,6 @@ function SearchContent() {
       <div className="sticky top-20 z-20 flex w-full border-b-4 border-primary bg-background shadow-[4px_4px_0px_0px_rgba(255,171,243,0.35)]">
         <div className="mx-auto w-full max-w-3xl px-4 py-4 md:px-6">
           <form onSubmit={handleSearch} className="flex flex-wrap items-center gap-3">
-            <Link
-              href="/"
-              className="font-headline shrink-0 text-lg font-black uppercase tracking-tighter text-primary transition-opacity hover:opacity-80"
-            >
-              ExportMinMaxer
-            </Link>
             <div className="group flex min-w-0 flex-1 items-center gap-2 border-2 border-outline-variant bg-background px-4 py-2 transition-colors focus-within:border-secondary-fixed">
               <span className="font-pixel shrink-0 text-secondary-fixed">&gt;</span>
               <input
